@@ -755,63 +755,56 @@ function renderProductionAnalyzer() {
                     </div>
 
                     <!-- RIGHT COLUMN: RESULTS -->
-                    <div style="border-left: 1px solid #e5e5e5; padding-left: 2rem;">
-                        <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1.5rem; text-align: center;">─────────── RESULTADOS ─────────────</h3>
-
+                    <div style="border-left: 1px solid #e5e5e5; padding-left: 2rem; display: flex; flex-direction: column;">
+                        
                         ${analysisState.result ? `
-                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- 1. GRAPH (PRIMARY) -->
+                            <div style="margin-bottom: 2rem; padding: 1rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 0.5rem; height: 350px; position: relative;">
+                                <canvas id="productionChart"></canvas>
+                            </div>
+
+                            <!-- 2. METRICS GRID (SECONDARY) -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <!-- Q Total -->
+                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Producción Total (Q)</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.Q}</div>
+                                </div>
+
                                 <!-- PFP -->
-                                <div class="result-row">
-                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                                        <div style="font-weight: 500;">📊 Producto Físico Promedio (PFP):</div>
-                                        <div style="font-family: monospace; font-size: 1.25rem;">${analysisState.result.PFP}</div>
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: #a3a3a3;">PFP = Q/X</div>
+                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Producto Promedio (PFP)</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.PFP}</div>
                                 </div>
 
                                 <!-- PMF -->
-                                <div class="result-row">
-                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                                        <div style="font-weight: 500;">📈 Producto Marginal Físico (PMF):</div>
-                                        <div style="font-family: monospace; font-size: 1.25rem;">${analysisState.result.PMF}</div>
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: #a3a3a3;">PMF = dQ/dX</div>
+                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Producto Marginal (PMF)</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.PMF}</div>
                                 </div>
 
-                                <!-- Max PMF -->
-                                <div style="background: #ecfccb; padding: 1rem; border-radius: 0.5rem; border: 1px solid #bef264;">
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: #3f6212; margin-bottom: 0.5rem;">🎯 Punto Máximo de PMF:</div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #365314;">
-                                        <span>X = <strong>${typeof analysisState.result.maxPMF.x === 'number' ? analysisState.result.maxPMF.x.toFixed(2) : analysisState.result.maxPMF.x}</strong> u</span>
-                                        <span>PMF_máx = <strong>${typeof analysisState.result.maxPMF.val === 'number' ? analysisState.result.maxPMF.val.toFixed(2) : analysisState.result.maxPMF.val}</strong></span>
-                                    </div>
-                                </div>
-
-                                <!-- Ep -->
-                                <div class="result-row">
-                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                                        <div style="font-weight: 500;">📊 Elasticidad de Producción (Ep):</div>
-                                        <div style="font-family: monospace; font-size: 1.25rem;">${analysisState.result.Ep}</div>
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: #a3a3a3;">Ep = PMF / PFP</div>
-                                </div>
-
-                                <!-- Diminishing Returns -->
-                                <div style="background: #fff7ed; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fed7aa;">
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: #9a3412; margin-bottom: 0.5rem;">⚠️ Ley Rendimientos Decrecientes:</div>
-                                    <div style="font-size: 0.875rem; color: #7c2d12;">
-                                        Inicia en: <strong>X = ${analysisState.result.diminishingStart}</strong> unidades
-                                    </div>
-                                </div>
-
-                                <!-- GRAPH CONTAINER -->
-                                <div style="margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 0.5rem; height: 300px; position: relative;">
-                                    <canvas id="productionChart"></canvas>
+                                <!-- Elasticity -->
+                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Elasticidad (Ep)</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.Ep}</div>
                                 </div>
                             </div>
+                            
+                            <!-- 3. ADDITIONAL DETAILS -->
+                            <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem; border-bottom: 1px solid #f5f5f5; padding-bottom: 0.5rem;">
+                                    <span>Punto Máximo PMF</span>
+                                    <span style="font-family: monospace;">X=${typeof analysisState.result.maxPMF.x === 'number' ? analysisState.result.maxPMF.x.toFixed(2) : analysisState.result.maxPMF.x} | Val=${typeof analysisState.result.maxPMF.val === 'number' ? analysisState.result.maxPMF.val.toFixed(2) : analysisState.result.maxPMF.val}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252;">
+                                    <span>Inicio Rend. Decrecientes</span>
+                                    <span style="font-family: monospace;">X=${analysisState.result.diminishingStart}</span>
+                                </div>
+                            </div>
+
                         ` : `
-                            <div style="text-align: center; color: #a3a3a3; padding: 2rem 0;">
-                                <p>Ingresa los datos y presiona "Analizar" para ver los resultados.</p>
+                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a3a3a3; background: #fafafa; border-radius: 1rem; border: 1px dashed #d4d4d4;">
+                                <p>Resultados y gráfico aparecerán aquí</p>
                             </div>
                         `}
                     </div>

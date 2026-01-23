@@ -28,10 +28,7 @@ const INITIAL_DATA = {
             professor: "Dr. Álvarez",
             description: "Teoría de la firma, costos de producción y maximización.",
             hasTools: true,
-            tasks: [
-                { id: 101, title: "Análisis de Costos", due: "Mañana", status: "pending" },
-                { id: 102, title: "Lectura Cap. 4", due: "Viernes", status: "done" }
-            ]
+            tasks: []
         },
         {
             id: 2,
@@ -41,9 +38,7 @@ const INITIAL_DATA = {
             grade: 9.0,
             professor: "Dra. Jiménez",
             description: "Comercio internacional, balanza de pagos y tipos de cambio.",
-            tasks: [
-                { id: 201, title: "Ensayo sobre Aranceles", due: "25 Oct", status: "pending" }
-            ]
+            tasks: []
         },
         {
             id: 3,
@@ -53,10 +48,7 @@ const INITIAL_DATA = {
             grade: 7.8,
             professor: "Mtro. Castillo",
             description: "Modelos macroeconómicos dinámicos y política monetaria.",
-            tasks: [
-                { id: 301, title: "Modelo IS-LM Avanzado", due: "Hoy", status: "urgent" },
-                { id: 302, title: "Quiz Sorpresa", due: "Ayer", status: "done" }
-            ]
+            tasks: []
         },
         {
             id: 4,
@@ -76,9 +68,7 @@ const INITIAL_DATA = {
             grade: 6.5,
             professor: "Dr. Newton",
             description: "Fundamentos matemáticos para estadística inferencial.",
-            tasks: [
-                { id: 501, title: "Problelario #3", due: "Lunes", status: "pending" }
-            ]
+            tasks: []
         },
         {
             id: 6,
@@ -88,10 +78,7 @@ const INITIAL_DATA = {
             grade: 8.2,
             professor: "Dr. Gauss",
             description: "Modelos de regresión lineal y series de tiempo.",
-            tasks: [
-                { id: 601, title: "Regresión Lineal Simple", due: "Jueves", status: "pending" },
-                { id: 602, title: "Instalar STATA/R", due: "Pasado", status: "done" }
-            ]
+            tasks: []
         },
         {
             id: 7,
@@ -101,9 +88,7 @@ const INITIAL_DATA = {
             grade: 10.0,
             professor: "Coord. Laboral",
             description: "Prácticas laborales supervisadas.",
-            tasks: [
-                { id: 701, title: "Reporte Mensual", due: "30 Oct", status: "pending" }
-            ]
+            tasks: []
         }
     ]
 };

@@ -716,14 +716,14 @@ window.calculateProduction = () => {
     Ep = PFP !== 0 ? PMF / PFP : 0;
 
     analysisState.result = {
-        Q: Q.toFixed(2),
-        PFP: PFP.toFixed(2),
-        PMF: PMF.toFixed(2),
-        Ep: Ep.toFixed(2),
+        Q: parseFloat(Q.toFixed(4)), // Parse float to remove trailing zeros if any
+        PFP: parseFloat(PFP.toFixed(4)),
+        PMF: parseFloat(PMF.toFixed(4)),
+        Ep: parseFloat(Ep.toFixed(4)),
         maxPMF,
-        diminishingStart: typeof diminishingStart === 'number' ? diminishingStart.toFixed(2) : diminishingStart,
-        stage1End: typeof stage1End === 'number' ? stage1End.toFixed(2) : stage1End,
-        stage2End: typeof stage2End === 'number' ? stage2End.toFixed(2) : stage2End,
+        diminishingStart: typeof diminishingStart === 'number' ? parseFloat(diminishingStart.toFixed(4)) : diminishingStart,
+        stage1End: typeof stage1End === 'number' ? parseFloat(stage1End.toFixed(4)) : stage1End,
+        stage2End: typeof stage2End === 'number' ? parseFloat(stage2End.toFixed(4)) : stage2End,
         currentStage
     };
 

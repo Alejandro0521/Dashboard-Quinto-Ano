@@ -3,14 +3,13 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-// TODO: Replace with your Firebase config
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyCik-qO0ic1eNCuIayr-chdGvk4Om3wyWk",
+    authDomain: "ingea-final-quinto.firebaseapp.com",
+    projectId: "ingea-final-quinto",
+    storageBucket: "ingea-final-quinto.firebasestorage.app",
+    messagingSenderId: "132873943294",
+    appId: "1:132873943294:web:03c95cee6025992fc2cdaf"
 };
 
 const app = initializeApp(firebaseConfig);

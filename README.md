@@ -1,6 +1,6 @@
-# Dashboard Estudiante - Configuración
+# INGEA-V Año Segundo Semestre
 
-Esta es una aplicación web simple (HTML + CSS + JavaScript) con autenticación de usuario y base de datos en la nube usando Firebase.
+Esta es una aplicación para los estudiantes del quinto año segundo semestre de INGEA donde tendrás todas tus materias y herramientas para las mismas. Úsala bajo tu responsabilidad.
 
 ## ✨ Características
 

@@ -464,3 +464,54 @@ body {
     outline: none;
     border-color: #171717;
 }
+
+/* Production Analyzer Responsive */
+.analyzer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.analyzer-column-right {
+    border-left: 1px solid #e5e5e5;
+    padding-left: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.chart-container-large {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 0.5rem;
+    height: 450px;
+    position: relative;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .analyzer-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .analyzer-column-right {
+        border-left: none;
+        border-top: 1px solid #e5e5e5;
+        padding-left: 0;
+        padding-top: 2rem;
+    }
+
+    .chart-container-large {
+        height: 300px;
+    }
+}

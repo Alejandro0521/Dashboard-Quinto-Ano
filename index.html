@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Estudiante</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
+    <div class="login-box">
+      <h1>Dashboard Estudiante</h1>
+      <div class="login-tabs">
+        <button class="tab-btn active" onclick="showLoginTab()">Iniciar Sesión</button>
+        <button class="tab-btn" onclick="showRegisterTab()">Registrarse</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="auth-form">
+        <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+        <input type="password" id="loginPassword" placeholder="Contraseña" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <p id="loginError" class="error-msg"></p>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="auth-form hidden">
+        <input type="text" id="registerName" placeholder="Nombre" required>
+        <input type="email" id="registerEmail" placeholder="Correo electrónico" required>
+        <input type="password" id="registerPassword" placeholder="Contraseña" required>
+        <button type="submit" class="btn-primary">Registrarse</button>
+        <p id="registerError" class="error-msg"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="mainApp" class="hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">S</div>
+        <span class="semester">Semestre 2024</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="navigateTo('dashboard')" data-view="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Resumen</span>
+        </button>
+        <button class="nav-item" onclick="navigateTo('tasks')" data-view="tasks">
+          <i data-lucide="check-square"></i>
+          <span>Tareas</span>
+        </button>
+        <button class="nav-item" onclick="navigateTo('stats')" data-view="stats">
+          <i data-lucide="pie-chart"></i>
+          <span>Progreso</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="logout()">
+          <i data-lucide="log-out"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="content"></div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+      <button onclick="navigateTo('dashboard')" data-view="dashboard" class="active">
+        <i data-lucide="home"></i>
+      </button>
+      <button onclick="navigateTo('tasks')" data-view="tasks">
+        <i data-lucide="check-square"></i>
+      </button>
+      <button onclick="navigateTo('stats')" data-view="stats">
+        <i data-lucide="pie-chart"></i>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Modals Container -->
+  <div id="modals"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>

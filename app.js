@@ -712,101 +712,105 @@ function renderProductionAnalyzer() {
                     <h2 style="font-size: 1.125rem; font-weight: 500;">Función de Producción Agropecuaria</h2>
                 </div>
                 
-                <div style="padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <!-- LEFT COLUMN: INPUTS -->
-                    <div>
-                        <div class="form-group">
-                            <label>Tipo de cultivo/producción:</label>
-                            <select id="cropType" class="form-select" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; margin-bottom: 1rem;">
-                                <option ${analysisState.crop === 'Maíz' ? 'selected' : ''}>Maíz</option>
-                                <option ${analysisState.crop === 'Trigo' ? 'selected' : ''}>Trigo</option>
-                                <option ${analysisState.crop === 'Ganado' ? 'selected' : ''}>Ganado</option>
-                                <option ${analysisState.crop === 'Leche' ? 'selected' : ''}>Leche</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Tipo de Función:</label>
-                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                                <button onclick="setFunctionType('quadratic')" class="btn-tab ${analysisState.functionType === 'quadratic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'quadratic' ? 'background: #171717; color: white;' : 'background: white;'}">Cuadrática</button>
-                                <button onclick="setFunctionType('cubic')" class="btn-tab ${analysisState.functionType === 'cubic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cubic' ? 'background: #171717; color: white;' : 'background: white;'}">Cúbica</button>
-                                <button onclick="setFunctionType('cobb-douglas')" class="btn-tab ${analysisState.functionType === 'cobb-douglas' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cobb-douglas' ? 'background: #171717; color: white;' : 'background: white;'}">Cobb-Douglas</button>
-                            </div>
-                        </div>
-
-                        <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 0.75rem; border: 1px dashed #d4d4d4;">
-                            <label style="display: block; margin-bottom: 1rem; font-weight: 500;">Ingresa los coeficientes:</label>
-                            
-                            ${renderFunctionInputs()}
-                            
-                            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e5e5;">
-                                <label style="display: flex; justify-content: space-between;">
-                                    <span>Nivel de Insumo (X)</span>
-                                    <span style="color: #a3a3a3; font-size: 0.75rem;">(fertilizante, agua, etc.)</span>
-                                </label>
-                                <input type="number" id="inputX" value="${analysisState.x}" min="0" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
-                            </div>
-                        </div>
-
-                        <button onclick="calculateProduction()" class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                            <i data-lucide="refresh-ccw" style="width: 18px; height: 18px;"></i>
-                            Analizar Función
-                        </button>
+                <div style="padding: 2rem;">
+                    <!-- 1. GRAPH SECTION (FULL WIDTH PROTAGONIST) -->
+                    ${analysisState.result ? `
+                    <div style="margin-bottom: 2rem; padding: 1rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 0.5rem; height: 450px; position: relative;">
+                        <canvas id="productionChart"></canvas>
                     </div>
+                    ` : ''}
 
-                    <!-- RIGHT COLUMN: RESULTS -->
-                    <div style="border-left: 1px solid #e5e5e5; padding-left: 2rem; display: flex; flex-direction: column;">
+                    <!-- 2. CONTROL & METRICS GRID -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; border-top: ${analysisState.result ? '1px solid #e5e5e5' : 'none'}; padding-top: ${analysisState.result ? '2rem' : '0'};">
                         
-                        ${analysisState.result ? `
-                            <!-- 1. GRAPH (PRIMARY) -->
-                            <div style="margin-bottom: 2rem; padding: 1rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 0.5rem; height: 350px; position: relative;">
-                                <canvas id="productionChart"></canvas>
+                        <!-- LEFT COLUMN: INPUTS -->
+                        <div>
+                            <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">1. Configuración</h3>
+                            <div class="form-group">
+                                <label>Tipo de cultivo/producción:</label>
+                                <select id="cropType" class="form-select" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; margin-bottom: 1rem;">
+                                    <option ${analysisState.crop === 'Maíz' ? 'selected' : ''}>Maíz</option>
+                                    <option ${analysisState.crop === 'Trigo' ? 'selected' : ''}>Trigo</option>
+                                    <option ${analysisState.crop === 'Ganado' ? 'selected' : ''}>Ganado</option>
+                                    <option ${analysisState.crop === 'Leche' ? 'selected' : ''}>Leche</option>
+                                </select>
                             </div>
 
-                            <!-- 2. METRICS GRID (SECONDARY) -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <!-- Q Total -->
-                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
-                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Producción Total (Q)</div>
-                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.Q}</div>
-                                </div>
-
-                                <!-- PFP -->
-                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
-                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Producto Promedio (PFP)</div>
-                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.PFP}</div>
-                                </div>
-
-                                <!-- PMF -->
-                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
-                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Producto Marginal (PMF)</div>
-                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.PMF}</div>
-                                </div>
-
-                                <!-- Elasticity -->
-                                <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
-                                    <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">Elasticidad (Ep)</div>
-                                    <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.Ep}</div>
+                            <div class="form-group">
+                                <label>Tipo de Función:</label>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                    <button onclick="setFunctionType('quadratic')" class="btn-tab ${analysisState.functionType === 'quadratic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'quadratic' ? 'background: #171717; color: white;' : 'background: white;'}">Cuadrática</button>
+                                    <button onclick="setFunctionType('cubic')" class="btn-tab ${analysisState.functionType === 'cubic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cubic' ? 'background: #171717; color: white;' : 'background: white;'}">Cúbica</button>
+                                    <button onclick="setFunctionType('cobb-douglas')" class="btn-tab ${analysisState.functionType === 'cobb-douglas' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cobb-douglas' ? 'background: #171717; color: white;' : 'background: white;'}">Cobb-Douglas</button>
                                 </div>
                             </div>
+
+                            <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 0.75rem; border: 1px dashed #d4d4d4;">
+                                <label style="display: block; margin-bottom: 1rem; font-weight: 500;">Ingresa los coeficientes:</label>
+                                ${renderFunctionInputs()}
+                                <div class="form-group" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e5e5;">
+                                    <label style="display: flex; justify-content: space-between;">
+                                        <span>Nivel de Insumo (X)</span>
+                                        <span style="color: #a3a3a3; font-size: 0.75rem;">(fertilizante, agua, etc.)</span>
+                                    </label>
+                                    <input type="number" id="inputX" value="${analysisState.x}" min="0" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                </div>
+                            </div>
+
+                            <button onclick="calculateProduction()" class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                <i data-lucide="refresh-ccw" style="width: 18px; height: 18px;"></i>
+                                Analizar Función
+                            </button>
+                        </div>
+
+                        <!-- RIGHT COLUMN: METRICS -->
+                        <div style="border-left: 1px solid #e5e5e5; padding-left: 2rem;">
+                            <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">2. Métricas Clave</h3>
                             
-                            <!-- 3. ADDITIONAL DETAILS -->
-                            <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem; border-bottom: 1px solid #f5f5f5; padding-bottom: 0.5rem;">
-                                    <span>Punto Máximo PMF</span>
-                                    <span style="font-family: monospace;">X=${typeof analysisState.result.maxPMF.x === 'number' ? analysisState.result.maxPMF.x.toFixed(2) : analysisState.result.maxPMF.x} | Val=${typeof analysisState.result.maxPMF.val === 'number' ? analysisState.result.maxPMF.val.toFixed(2) : analysisState.result.maxPMF.val}</span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252;">
-                                    <span>Inicio Rend. Decrecientes</span>
-                                    <span style="font-family: monospace;">X=${analysisState.result.diminishingStart}</span>
-                                </div>
-                            </div>
+                            ${analysisState.result ? `
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <!-- Q Total -->
+                                    <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                        <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">PRODUCCIÓN (Q)</div>
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.Q}</div>
+                                    </div>
 
-                        ` : `
-                            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #a3a3a3; background: #fafafa; border-radius: 1rem; border: 1px dashed #d4d4d4;">
-                                <p>Resultados y gráfico aparecerán aquí</p>
-                            </div>
-                        `}
+                                    <!-- PFP -->
+                                    <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                        <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">PROMEDIO (PFP)</div>
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.PFP}</div>
+                                    </div>
+
+                                    <!-- PMF -->
+                                    <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                        <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">MARGINAL (PMF)</div>
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.PMF}</div>
+                                    </div>
+
+                                    <!-- Elasticity -->
+                                    <div style="padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fafafa;">
+                                        <div style="font-size: 0.75rem; color: #737373; margin-bottom: 0.25rem;">ELASTICIDAD (Ep)</div>
+                                        <div style="font-size: 1.5rem; font-weight: 600; color: #171717;">${analysisState.result.Ep}</div>
+                                    </div>
+
+                                    <!-- Additional Stats Full Width -->
+                                    <div style="grid-column: span 2; padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem; border-bottom: 1px solid #f5f5f5; padding-bottom: 0.5rem;">
+                                            <span>Max PMF</span>
+                                            <span style="font-family: monospace;">X=${typeof analysisState.result.maxPMF.x === 'number' ? analysisState.result.maxPMF.x.toFixed(2) : analysisState.result.maxPMF.x} | Val=${typeof analysisState.result.maxPMF.val === 'number' ? analysisState.result.maxPMF.val.toFixed(2) : analysisState.result.maxPMF.val}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252;">
+                                            <span>Inicio Rend. Decrecientes</span>
+                                            <span style="font-family: monospace;">X=${analysisState.result.diminishingStart}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="height: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; color: #a3a3a3; background: #fafafa; border-radius: 1rem; border: 1px dashed #d4d4d4;">
+                                    <p>Esperando análisis...</p>
+                                </div>
+                            `}
+                        </div>
                     </div>
                 </div>
             </div>

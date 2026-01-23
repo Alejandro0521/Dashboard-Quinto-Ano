@@ -973,9 +973,10 @@ window.closeModal = (event) => {
 lucide.createIcons();
 
 // Chart Instance
+// Chart Instance
 let productionChart = null;
 
-function renderChart(labels, dataQ, dataPFP, dataPMF) {
+window.renderChart = (labels, dataQ, dataPFP, dataPMF) => {
     const ctx = document.getElementById('productionChart');
     if (!ctx) return;
 

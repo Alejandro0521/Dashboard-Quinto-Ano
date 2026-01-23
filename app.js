@@ -606,6 +606,40 @@ window.calculateProduction = () => {
 
     analysisState.params = params;
 
+    // --- Chart Data Generation Vars ---
+    const chartLabels = [];
+    const dataQ = [];
+    const dataPFP = [];
+    const dataPMF = [];
+    // ----------------------------------
+
+    // Determine range for graph
+    const maxGraphX = Math.max(parseFloat(x) * 1.5, 20);
+    const step = maxGraphX / 50;
+
+    for (let i = 0; i <= maxGraphX; i += step) {
+        let curX = i;
+        let curQ = 0, curPFP = 0, curPMF = 0;
+
+        if (analysisState.functionType === 'quadratic') {
+            curQ = params.a + (params.b * curX) - (params.c * curX * curX);
+            curPMF = params.b - (2 * params.c * curX);
+        } else if (analysisState.functionType === 'cubic') {
+            curQ = params.a + (params.b * curX) + (params.c * curX * curX) - (params.d * curX * curX * curX);
+            curPMF = params.b + (2 * params.c * curX) - (3 * params.d * curX * curX);
+        } else if (analysisState.functionType === 'cobb-douglas') {
+            curQ = params.alpha * Math.pow(curX, params.beta);
+            curPMF = params.alpha * params.beta * Math.pow(curX, params.beta - 1);
+        }
+
+        curPFP = curX !== 0 ? curQ / curX : 0;
+
+        chartLabels.push(curX.toFixed(1));
+        dataQ.push(curQ);
+        dataPFP.push(curPFP);
+        dataPMF.push(curPMF);
+    }
+
     let Q = 0, PFP = 0, PMF = 0, Ep = 0;
     let maxPMF = { x: 0, val: 0 };
     let diminishingStart = 0;
@@ -652,6 +686,12 @@ window.calculateProduction = () => {
     };
 
     renderView();
+    // Render Chart
+    setTimeout(() => {
+        if (typeof renderChart === 'function') {
+            renderChart(chartLabels, dataQ, dataPFP, dataPMF);
+        }
+    }, 100);
 };
 
 function renderProductionAnalyzer() {

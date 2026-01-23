@@ -754,16 +754,16 @@ function renderProductionAnalyzer() {
                     <h2 style="font-size: 1.125rem; font-weight: 500;">Función de Producción Agropecuaria</h2>
                 </div>
                 
-                <div style="padding: 2rem;">
+                <div class="analyzer-wrapper" style="padding: 2rem;">
                     <!-- 1. GRAPH SECTION (FULL WIDTH PROTAGONIST) -->
                     ${analysisState.result ? `
-                    <div style="margin-bottom: 2rem; padding: 1rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 0.5rem; height: 450px; position: relative;">
+                    <div class="chart-container-large">
                         <canvas id="productionChart"></canvas>
                     </div>
                     ` : ''}
 
                     <!-- 2. CONTROL & METRICS GRID -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; border-top: ${analysisState.result ? '1px solid #e5e5e5' : 'none'}; padding-top: ${analysisState.result ? '2rem' : '0'};">
+                    <div class="analyzer-grid" style="border-top: ${analysisState.result ? '1px solid #e5e5e5' : 'none'}; padding-top: ${analysisState.result ? '2rem' : '0'};">
                         
                         <!-- LEFT COLUMN: INPUTS -->
                         <div>
@@ -780,7 +780,7 @@ function renderProductionAnalyzer() {
 
                             <div class="form-group">
                                 <label>Tipo de Función:</label>
-                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
                                     <button onclick="setFunctionType('quadratic')" class="btn-tab ${analysisState.functionType === 'quadratic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'quadratic' ? 'background: #171717; color: white;' : 'background: white;'}">Cuadrática</button>
                                     <button onclick="setFunctionType('cubic')" class="btn-tab ${analysisState.functionType === 'cubic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cubic' ? 'background: #171717; color: white;' : 'background: white;'}">Cúbica</button>
                                     <button onclick="setFunctionType('cobb-douglas')" class="btn-tab ${analysisState.functionType === 'cobb-douglas' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cobb-douglas' ? 'background: #171717; color: white;' : 'background: white;'}">Cobb-Douglas</button>

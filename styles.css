@@ -432,7 +432,45 @@ body {
     }
 
     .main-content {
-        padding: 1.5rem;
+        padding: 1rem;
+        /* Reduced padding for mobile */
+        width: 100%;
+        /* Ensure full width */
+        padding-bottom: 6rem;
+        /* Space for bottom nav */
+    }
+
+    #mainApp {
+        flex-direction: column;
+        /* Stack if needed, though sidebar hidden handles it */
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.75rem;
+    }
+
+    .analyzer-wrapper {
+        padding: 1rem !important;
+        /* Override inline style */
+    }
+
+    /* Adjust font sizes for small screens */
+    h1 {
+        font-size: 1.25rem;
+    }
+
+    h2 {
+        font-size: 1.125rem;
+    }
+
+    h3 {
+        font-size: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
     }
 }
 
@@ -500,8 +538,9 @@ body {
 @media (max-width: 768px) {
     .analyzer-grid {
         grid-template-columns: 1fr;
-        padding: 1rem;
-        gap: 1.5rem;
+        padding: 0;
+        /* Remove padding in grid container on mobile */
+        gap: 2rem;
     }
 
     .analyzer-column-right {
@@ -512,6 +551,12 @@ body {
     }
 
     .chart-container-large {
-        height: 300px;
+        height: 280px;
+        /* Even smaller for mobile */
+        margin-bottom: 1.5rem;
+    }
+
+    .analyzer-wrapper {
+        padding: 1rem !important;
     }
 }

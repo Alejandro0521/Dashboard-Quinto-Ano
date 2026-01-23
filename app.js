@@ -644,19 +644,33 @@ window.calculateProduction = () => {
     let maxPMF = { x: 0, val: 0 };
     let diminishingStart = 0;
 
+    // Stages Limits
+    let stage1End = 0; // Where PFP = PMF (Max PFP)
+    let stage2End = 0; // Where PMF = 0 (Max Q)
+    let currentStage = 'Desconocida';
+
     if (analysisState.functionType === 'quadratic') {
-        // Q = a + bX - cX²
+        // Q = a + bX - cX² (assuming a=0 for rational stages usually)
         Q = params.a + (params.b * x) - (params.c * x * x);
         PMF = params.b - (2 * params.c * x);
         // Max PMF in quadratic is at X=0 (start) since it's a downward line (b - 2cX)
         maxPMF = { x: 0, val: params.b };
         diminishingStart = 0; // Starts immediately for c > 0
+
+        // Stage 1 End: PFP = PMF. If a=0, PFP = b-cX. PMF = b-2cX.
+        // b-cX = b-2cX => cX = 0 => X=0. Stage 1 is instantaneous if a=0.
+        // If a!=0, calculate intersect. For simplicitly assuming a=0 behavior or X=0.
+        stage1End = 0;
+
+        // Stage 2 End: PMF = 0 => b - 2cX = 0 => X = b / 2c
+        stage2End = params.c !== 0 ? params.b / (2 * params.c) : 0;
+
     } else if (analysisState.functionType === 'cubic') {
         // Q = a + bX + cX² - dX³
         Q = params.a + (params.b * x) + (params.c * x * x) - (params.d * x * x * x);
-        // PMF = b + 2cX - 3dX²
         PMF = params.b + (2 * params.c * x) - (3 * params.d * x * x);
-        // Max PMF vertex for parabola -3dX^2 + 2cX + b is at x = -2c / (2*-3d) = c / 3d
+
+        // Max PMF vertex X = -2c / (2*-3d) = c / 3d
         let inflexionX = params.c / (3 * params.d);
         if (inflexionX < 0) inflexionX = 0;
         diminishingStart = inflexionX;
@@ -664,13 +678,38 @@ window.calculateProduction = () => {
             x: inflexionX,
             val: params.b + (2 * params.c * inflexionX) - (3 * params.d * inflexionX * inflexionX)
         };
+
+        // Stage 1 End (Max PFP): X = c / 2d (Derived from PFP=PMF for standard cubic a=0)
+        stage1End = params.d !== 0 ? params.c / (2 * params.d) : 0;
+
+        // Stage 2 End (PMF = 0): Roots of -3dX^2 + 2cX + b = 0
+        // X = (-2c - sqrt(4c^2 - 4(-3d)b)) / -6d  (USING POSITIVE ROOT)
+        if (params.d !== 0) {
+            const disc = (4 * params.c * params.c) - (4 * (-3 * params.d) * params.b);
+            if (disc >= 0) {
+                stage2End = (-2 * params.c - Math.sqrt(disc)) / (-6 * params.d);
+            }
+        }
+
     } else if (analysisState.functionType === 'cobb-douglas') {
-        // Q = A * X^b (using alpha as A, beta as b)
         Q = params.alpha * Math.pow(x, params.beta);
         PMF = params.alpha * params.beta * Math.pow(x, params.beta - 1);
-        // Max PMF -> if beta < 1, decreasing => max at 0. If beta > 1, increasing.
         maxPMF = params.beta < 1 ? { x: 0, val: Infinity } : { x: '∞', val: '∞' };
         diminishingStart = params.beta < 1 ? 0 : 'N/A';
+
+        // Cobb-Douglas typically doesn't have 3 stages in standard sense (Monotonic)
+        // If Beta < 1, always diminishing returns (Stage 2-ish behavior but never PMF<0)
+        stage1End = 0;
+        stage2End = Infinity;
+    }
+
+    // Determine Current Stage
+    if (analysisState.functionType === 'cobb-douglas') {
+        currentStage = 'Racional (Rend. Decrecientes)';
+    } else {
+        if (x < stage1End) currentStage = 'Etapa 1 (Irracional)';
+        else if (x >= stage1End && x <= stage2End) currentStage = 'Etapa 2 (Racional)';
+        else currentStage = 'Etapa 3 (Irracional)';
     }
 
     PFP = x !== 0 ? Q / x : 0;
@@ -682,7 +721,10 @@ window.calculateProduction = () => {
         PMF: PMF.toFixed(2),
         Ep: Ep.toFixed(2),
         maxPMF,
-        diminishingStart: typeof diminishingStart === 'number' ? diminishingStart.toFixed(2) : diminishingStart
+        diminishingStart: typeof diminishingStart === 'number' ? diminishingStart.toFixed(2) : diminishingStart,
+        stage1End: typeof stage1End === 'number' ? stage1End.toFixed(2) : stage1End,
+        stage2End: typeof stage2End === 'number' ? stage2End.toFixed(2) : stage2End,
+        currentStage
     };
 
     renderView();

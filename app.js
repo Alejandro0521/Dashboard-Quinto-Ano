@@ -764,9 +764,9 @@ function renderProductionAnalyzer() {
                                     </div>
                                 </div>
 
-                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                                    <button class="btn-secondary" style="flex: 1; justify-content: center;">📊 Ver Gráfico</button>
-                                    <button class="btn-secondary" style="flex: 1; justify-content: center;">🔍 Etapas</button>
+                                <!-- GRAPH CONTAINER -->
+                                <div style="margin-top: 1rem; padding: 1rem; background: #fff; border: 1px solid #e5e5e5; border-radius: 0.5rem; height: 300px; position: relative;">
+                                    <canvas id="productionChart"></canvas>
                                 </div>
                             </div>
                         ` : `
@@ -931,3 +931,77 @@ window.closeModal = (event) => {
 };
 
 lucide.createIcons();
+
+// Chart Instance
+let productionChart = null;
+
+function renderChart(labels, dataQ, dataPFP, dataPMF) {
+    const ctx = document.getElementById('productionChart');
+    if (!ctx) return;
+
+    if (productionChart) {
+        productionChart.destroy();
+    }
+
+    productionChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Producción Total (Q)',
+                    data: dataQ,
+                    borderColor: '#2563eb', // Blue
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Producto Promedio (PFP)',
+                    data: dataPFP,
+                    borderColor: '#16a34a', // Green
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Producto Marginal (PMF)',
+                    data: dataPMF,
+                    borderColor: '#dc2626', // Red
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Insumo Variable (X)' }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Producción (Q)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'PFP / PMF' }, // Separate axis for marginal/average values usually smaller
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            }
+        }
+    });
+}

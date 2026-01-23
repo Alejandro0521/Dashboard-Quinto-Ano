@@ -569,38 +569,89 @@ function renderTool() {
 
 // Variables for Calculator State
 let analysisState = {
-    a: 0,
-    b: 10,
-    c: 0.5,
+    crop: 'Maíz',
+    functionType: 'quadratic', // quadratic, cubic, cobb-douglas
+    params: { a: 0, b: 10, c: 0.5, d: 0.02, alpha: 1, beta: 0.5 },
     x: 5,
     result: null
 };
 
+window.setFunctionType = (type) => {
+    analysisState.functionType = type;
+    analysisState.result = null; // Reset results
+    renderView();
+};
+
 window.calculateProduction = () => {
-    const a = parseFloat(document.getElementById('inputA').value) || 0;
-    const b = parseFloat(document.getElementById('inputB').value) || 0;
-    const c = parseFloat(document.getElementById('inputC').value) || 0;
     const x = parseFloat(document.getElementById('inputX').value) || 0;
+    analysisState.x = x;
+    analysisState.crop = document.getElementById('cropType').value;
 
-    analysisState = { a, b, c, x };
+    let params = { ...analysisState.params };
 
-    // Formulas: Q = a + bX - cX²
-    const Q = a + (b * x) - (c * Math.pow(x, 2));
-    // PFP = Q / X
-    const PFP = x !== 0 ? Q / x : 0;
-    // PMF = b - 2cX (Derivative)
-    const PMF = b - (2 * c * x);
-    // Ep = PMF / PFP
-    const Ep = PFP !== 0 ? PMF / PFP : 0;
+    // Get current params based on active function type
+    if (analysisState.functionType === 'quadratic') {
+        params.a = parseFloat(document.getElementById('inputA').value) || 0;
+        params.b = parseFloat(document.getElementById('inputB').value) || 0;
+        params.c = parseFloat(document.getElementById('inputC').value) || 0;
+    } else if (analysisState.functionType === 'cubic') {
+        params.a = parseFloat(document.getElementById('inputA').value) || 0;
+        params.b = parseFloat(document.getElementById('inputB').value) || 0;
+        params.c = parseFloat(document.getElementById('inputC').value) || 0;
+        params.d = parseFloat(document.getElementById('inputD').value) || 0;
+    } else if (analysisState.functionType === 'cobb-douglas') {
+        params.alpha = parseFloat(document.getElementById('inputAlpha').value) || 0;
+        params.beta = parseFloat(document.getElementById('inputBeta').value) || 0;
+    }
+
+    analysisState.params = params;
+
+    let Q = 0, PFP = 0, PMF = 0, Ep = 0;
+    let maxPMF = { x: 0, val: 0 };
+    let diminishingStart = 0;
+
+    if (analysisState.functionType === 'quadratic') {
+        // Q = a + bX - cX²
+        Q = params.a + (params.b * x) - (params.c * x * x);
+        PMF = params.b - (2 * params.c * x);
+        // Max PMF in quadratic is at X=0 (start) since it's a downward line (b - 2cX)
+        maxPMF = { x: 0, val: params.b };
+        diminishingStart = 0; // Starts immediately for c > 0
+    } else if (analysisState.functionType === 'cubic') {
+        // Q = a + bX + cX² - dX³
+        Q = params.a + (params.b * x) + (params.c * x * x) - (params.d * x * x * x);
+        // PMF = b + 2cX - 3dX²
+        PMF = params.b + (2 * params.c * x) - (3 * params.d * x * x);
+        // Max PMF vertex for parabola -3dX^2 + 2cX + b is at x = -2c / (2*-3d) = c / 3d
+        let inflexionX = params.c / (3 * params.d);
+        if (inflexionX < 0) inflexionX = 0;
+        diminishingStart = inflexionX;
+        maxPMF = {
+            x: inflexionX,
+            val: params.b + (2 * params.c * inflexionX) - (3 * params.d * inflexionX * inflexionX)
+        };
+    } else if (analysisState.functionType === 'cobb-douglas') {
+        // Q = A * X^b (using alpha as A, beta as b)
+        Q = params.alpha * Math.pow(x, params.beta);
+        PMF = params.alpha * params.beta * Math.pow(x, params.beta - 1);
+        // Max PMF -> if beta < 1, decreasing => max at 0. If beta > 1, increasing.
+        maxPMF = params.beta < 1 ? { x: 0, val: Infinity } : { x: '∞', val: '∞' };
+        diminishingStart = params.beta < 1 ? 0 : 'N/A';
+    }
+
+    PFP = x !== 0 ? Q / x : 0;
+    Ep = PFP !== 0 ? PMF / PFP : 0;
 
     analysisState.result = {
         Q: Q.toFixed(2),
         PFP: PFP.toFixed(2),
         PMF: PMF.toFixed(2),
-        Ep: Ep.toFixed(2)
+        Ep: Ep.toFixed(2),
+        maxPMF,
+        diminishingStart: typeof diminishingStart === 'number' ? diminishingStart.toFixed(2) : diminishingStart
     };
 
-    renderView(); // Re-render to show results
+    renderView();
 };
 
 function renderProductionAnalyzer() {
@@ -614,101 +665,157 @@ function renderProductionAnalyzer() {
                 <div style="font-size: 0.875rem; color: #a3a3a3;">Unidad 1 / Analizador de Funciones</div>
             </div>
 
-            <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Analizador de Funciones</h1>
-
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                <!-- Sidebar Inputs -->
-                <div>
-                    <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1rem;">
-                        <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">Configuración</h3>
-                        
+            <!-- Header Card (ASCII Header Style) -->
+            <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; overflow: hidden; margin-bottom: 2rem;">
+                <div style="background: #fafafa; padding: 1rem; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.5rem;">🌾</span>
+                    <h2 style="font-size: 1.125rem; font-weight: 500;">Función de Producción Agropecuaria</h2>
+                </div>
+                
+                <div style="padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- LEFT COLUMN: INPUTS -->
+                    <div>
                         <div class="form-group">
-                            <label>Cultivo</label>
-                            <select id="cropType" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
-                                <option>Maíz</option>
-                                <option>Trigo</option>
-                                <option>Sorgo</option>
+                            <label>Tipo de cultivo/producción:</label>
+                            <select id="cropType" class="form-select" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; margin-bottom: 1rem;">
+                                <option ${analysisState.crop === 'Maíz' ? 'selected' : ''}>Maíz</option>
+                                <option ${analysisState.crop === 'Trigo' ? 'selected' : ''}>Trigo</option>
+                                <option ${analysisState.crop === 'Ganado' ? 'selected' : ''}>Ganado</option>
+                                <option ${analysisState.crop === 'Leche' ? 'selected' : ''}>Leche</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group" style="margin-top: 1rem;">
-                            <label>Tipo de Función</label>
-                            <div style="padding: 0.75rem; background: #f5f5f5; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem; border: 1px solid #e5e5e5;">
-                                Cuadrática<br>
-                                <span style="color: #666;">Q = a + bX - cX²</span>
+
+                        <div class="form-group">
+                            <label>Tipo de Función:</label>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                <button onclick="setFunctionType('quadratic')" class="btn-tab ${analysisState.functionType === 'quadratic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'quadratic' ? 'background: #171717; color: white;' : 'background: white;'}">Cuadrática</button>
+                                <button onclick="setFunctionType('cubic')" class="btn-tab ${analysisState.functionType === 'cubic' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cubic' ? 'background: #171717; color: white;' : 'background: white;'}">Cúbica</button>
+                                <button onclick="setFunctionType('cobb-douglas')" class="btn-tab ${analysisState.functionType === 'cobb-douglas' ? 'active' : ''}" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; ${analysisState.functionType === 'cobb-douglas' ? 'background: #171717; color: white;' : 'background: white;'}">Cobb-Douglas</button>
                             </div>
                         </div>
+
+                        <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 0.75rem; border: 1px dashed #d4d4d4;">
+                            <label style="display: block; margin-bottom: 1rem; font-weight: 500;">Ingresa los coeficientes:</label>
+                            
+                            ${renderFunctionInputs()}
+                            
+                            <div class="form-group" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e5e5;">
+                                <label style="display: flex; justify-content: space-between;">
+                                    <span>Nivel de Insumo (X)</span>
+                                    <span style="color: #a3a3a3; font-size: 0.75rem;">(fertilizante, agua, etc.)</span>
+                                </label>
+                                <input type="number" id="inputX" value="${analysisState.x}" min="0" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                            </div>
+                        </div>
+
+                        <button onclick="calculateProduction()" class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i data-lucide="refresh-ccw" style="width: 18px; height: 18px;"></i>
+                            Analizar Función
+                        </button>
                     </div>
 
-                    <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem;">
-                        <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">Parámetros</h3>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label>a (const)</label>
-                                <input type="number" id="inputA" value="${analysisState.a}" step="0.1" onchange="calculateProduction()" class="form-input">
+                    <!-- RIGHT COLUMN: RESULTS -->
+                    <div style="border-left: 1px solid #e5e5e5; padding-left: 2rem;">
+                        <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1.5rem; text-align: center;">─────────── RESULTADOS ─────────────</h3>
+
+                        ${analysisState.result ? `
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <!-- PFP -->
+                                <div class="result-row">
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <div style="font-weight: 500;">📊 Producto Físico Promedio (PFP):</div>
+                                        <div style="font-family: monospace; font-size: 1.25rem;">${analysisState.result.PFP}</div>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #a3a3a3;">PFP = Q/X</div>
+                                </div>
+
+                                <!-- PMF -->
+                                <div class="result-row">
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <div style="font-weight: 500;">📈 Producto Marginal Físico (PMF):</div>
+                                        <div style="font-family: monospace; font-size: 1.25rem;">${analysisState.result.PMF}</div>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #a3a3a3;">PMF = dQ/dX</div>
+                                </div>
+
+                                <!-- Max PMF -->
+                                <div style="background: #ecfccb; padding: 1rem; border-radius: 0.5rem; border: 1px solid #bef264;">
+                                    <div style="font-weight: 600; font-size: 0.875rem; color: #3f6212; margin-bottom: 0.5rem;">🎯 Punto Máximo de PMF:</div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #365314;">
+                                        <span>X = <strong>${typeof analysisState.result.maxPMF.x === 'number' ? analysisState.result.maxPMF.x.toFixed(2) : analysisState.result.maxPMF.x}</strong> u</span>
+                                        <span>PMF_máx = <strong>${typeof analysisState.result.maxPMF.val === 'number' ? analysisState.result.maxPMF.val.toFixed(2) : analysisState.result.maxPMF.val}</strong></span>
+                                    </div>
+                                </div>
+
+                                <!-- Ep -->
+                                <div class="result-row">
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <div style="font-weight: 500;">📊 Elasticidad de Producción (Ep):</div>
+                                        <div style="font-family: monospace; font-size: 1.25rem;">${analysisState.result.Ep}</div>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #a3a3a3;">Ep = PMF / PFP</div>
+                                </div>
+
+                                <!-- Diminishing Returns -->
+                                <div style="background: #fff7ed; padding: 1rem; border-radius: 0.5rem; border: 1px solid #fed7aa;">
+                                    <div style="font-weight: 600; font-size: 0.875rem; color: #9a3412; margin-bottom: 0.5rem;">⚠️ Ley Rendimientos Decrecientes:</div>
+                                    <div style="font-size: 0.875rem; color: #7c2d12;">
+                                        Inicia en: <strong>X = ${analysisState.result.diminishingStart}</strong> unidades
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button class="btn-secondary" style="flex: 1; justify-content: center;">📊 Ver Gráfico</button>
+                                    <button class="btn-secondary" style="flex: 1; justify-content: center;">🔍 Etapas</button>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>b (linear)</label>
-                                <input type="number" id="inputB" value="${analysisState.b}" step="0.1" onchange="calculateProduction()" class="form-input">
+                        ` : `
+                            <div style="text-align: center; color: #a3a3a3; padding: 2rem 0;">
+                                <p>Ingresa los datos y presiona "Analizar" para ver los resultados.</p>
                             </div>
-                            <div class="form-group">
-                                <label>c (quad)</label>
-                                <input type="number" id="inputC" value="${analysisState.c}" step="0.01" onchange="calculateProduction()" class="form-input">
-                            </div>
-                            <div class="form-group">
-                                <label>Nivel Insumo (X)</label>
-                                <input type="number" id="inputX" value="${analysisState.x}" min="0" onchange="calculateProduction()" class="form-input">
-                            </div>
-                        </div>
+                        `}
                     </div>
-                </div>
-
-                <!-- Results Area -->
-                <div>
-                     ${analysisState.result ? `
-                        <div style="background: #171717; color: white; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;">
-                            <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem;">Resultados Instantáneos</h3>
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
-                                <div>
-                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Producción Total (Q)</div>
-                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.Q}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Producto Promedio (PFP)</div>
-                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.PFP}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Producto Marginal (PMF)</div>
-                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.PMF}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Elasticidad (Ep)</div>
-                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.Ep}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="background: white; border: 1px solid #e5e5e5; padding: 2rem; border-radius: 1rem;">
-                            <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #f59e0b;"></i>
-                                Ley de Rendimientos Decrecientes
-                            </h3>
-                            <p style="color: #666; line-height: 1.6;">
-                                En funciones cuadráticas, los rendimientos decrecientes inician inmediatamente cuando <strong>c > 0</strong>, ya que el Producto Marginal (PMF) siempre es decreciente conforme aumenta X.
-                            </p>
-                        </div>
-                     ` : `
-                        <div style="height: 100%; border: 2px dashed #e5e5e5; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #a3a3a3; min-height: 400px;">
-                            <i data-lucide="bar-chart-2" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
-                            <p>Ajusta los valores para ver los resultados</p>
-                            <button onclick="calculateProduction()" class="btn-primary" style="margin-top: 1rem;">Calcular Ahora</button>
-                        </div>
-                     `}
                 </div>
             </div>
         </div>
     `;
+}
+
+function renderFunctionInputs() {
+    if (analysisState.functionType === 'quadratic') {
+        return `
+            <div style="font-family: monospace; margin-bottom: 1rem; color: #666; text-align: center;">Q = a + bX - cX²</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                <input type="number" id="inputA" placeholder="a" value="${analysisState.params.a}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                <input type="number" id="inputB" placeholder="b" value="${analysisState.params.b}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                <input type="number" id="inputC" placeholder="c" value="${analysisState.params.c}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+            </div>
+        `;
+    } else if (analysisState.functionType === 'cubic') {
+        return `
+            <div style="font-family: monospace; margin-bottom: 1rem; color: #666; text-align: center;">Q = a + bX + cX² - dX³</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <input type="number" id="inputA" placeholder="a" value="${analysisState.params.a}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                <input type="number" id="inputB" placeholder="b" value="${analysisState.params.b}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                <input type="number" id="inputC" placeholder="c" value="${analysisState.params.c}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                <input type="number" id="inputD" placeholder="d" value="${analysisState.params.d}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+            </div>
+        `;
+    } else if (analysisState.functionType === 'cobb-douglas') {
+        return `
+            <div style="font-family: monospace; margin-bottom: 1rem; color: #666; text-align: center;" title="Q = A * X^β">Q = A · X <sup>β</sup></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div class="form-group">
+                    <label style="font-size: 0.75rem;">A (Tecnología)</label>
+                    <input type="number" id="inputAlpha" value="${analysisState.params.alpha}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; width: 100%;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 0.75rem;">β (Elasticidad)</label>
+                    <input type="number" id="inputBeta" value="${analysisState.params.beta}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; width: 100%;">
+                </div>
+            </div>
+        `;
+    }
 }
 window.viewCourse = (courseId) => {
     selectedCourse = userData.courses.find(c => c.id === courseId);

@@ -366,8 +366,26 @@ function renderStats() {
     `;
 }
 
+// Helper to control tabs within course view
+let currentCourseTab = 'detalles';
+
+window.setCourseTab = (tab) => {
+    currentCourseTab = tab;
+    renderView();
+};
+
 function renderCourseDetail() {
     if (!selectedCourse) return '';
+
+    const tabs = [
+        { id: 'detalles', label: 'Detalles', icon: 'info' },
+        { id: 'tareas', label: 'Tareas', icon: 'check-square' },
+        { id: 'recursos', label: 'Recursos', icon: 'book-open' },
+        { id: 'herramientas', label: 'Herramientas', icon: 'wrench' }
+    ];
+
+    const activeTasks = selectedCourse.tasks.filter(t => t.status !== 'done');
+    const completedTasks = selectedCourse.tasks.filter(t => t.status === 'done');
 
     return `
         <div style="max-width: 48rem; margin: 0 auto;">
@@ -381,22 +399,154 @@ function renderCourseDetail() {
                 <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 0.5rem;">${selectedCourse.name}</h1>
                 <p style="color: #a3a3a3; font-size: 0.875rem;">${selectedCourse.description}</p>
             </div>
+
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #e5e5e5; padding-bottom: 1px;">
+                ${tabs.map(tab => `
+                    <button 
+                        onclick="setCourseTab('${tab.id}')"
+                        style="
+                            padding: 0.75rem 0;
+                            margin-bottom: -1px;
+                            background: none;
+                            border: none;
+                            border-bottom: 2px solid ${currentCourseTab === tab.id ? '#171717' : 'transparent'};
+                            color: ${currentCourseTab === tab.id ? '#171717' : '#a3a3a3'};
+                            font-weight: ${currentCourseTab === tab.id ? '500' : '400'};
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            transition: all 0.2s;
+                        "
+                    >
+                        <i data-lucide="${tab.icon}" style="width: 16px; height: 16px;"></i>
+                        ${tab.label}
+                    </button>
+                `).join('')}
+            </div>
             
-            <div style="background: white; border: 1px solid #e5e5e5; padding: 2rem; border-radius: 1rem;">
-                <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem;">Detalles</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
-                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">Calificación</div>
-                        <div style="font-size: 1.5rem; font-weight: 300;">${selectedCourse.grade}</div>
-                    </div>
-                    <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
-                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem;">Asistencia</div>
-                        <div style="font-size: 1.5rem; font-weight: 300;">92%</div>
-                    </div>
-                </div>
+            <div style="min-height: 200px;">
+                ${renderCourseTabContent(activeTasks, completedTasks)}
             </div>
         </div>
     `;
+}
+
+function renderCourseTabContent(activeTasks, completedTasks) {
+    if (currentCourseTab === 'detalles') {
+        return `
+            <div style="background: white; border: 1px solid #e5e5e5; padding: 2rem; border-radius: 1rem;">
+                <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem;">Información General</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                    <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
+                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Profesor</div>
+                        <div style="font-size: 1.125rem; font-weight: 500;">${selectedCourse.professor}</div>
+                    </div>
+                    <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
+                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Calificación Actual</div>
+                        <div style="font-size: 1.5rem; font-weight: 300;">${selectedCourse.grade}</div>
+                    </div>
+                    <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
+                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Progreso</div>
+                        <div style="font-size: 1.5rem; font-weight: 300;">${selectedCourse.progress}%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    if (currentCourseTab === 'tareas') {
+        return `
+            <div>
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                    <button onclick="openAddTaskModal()" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        + Nueva Tarea
+                    </button>
+                </div>
+
+                ${activeTasks.length === 0 && completedTasks.length === 0 ? `
+                    <div style="text-align: center; padding: 3rem; color: #a3a3a3;">
+                        <i data-lucide="check-circle" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>No hay tareas registradas para esta materia.</p>
+                    </div>
+                ` : ''}
+
+                ${activeTasks.length > 0 ? `
+                    <h4 style="font-size: 0.875rem; color: #a3a3a3; margin-bottom: 1rem; margin-top: 1rem;">Pendientes</h4>
+                    ${activeTasks.map(task => `
+                        <div class="task-item">
+                            <div class="task-checkbox" onclick="toggleTask(${selectedCourse.id}, ${task.id})"></div>
+                            <div class="task-info">
+                                <div class="task-title">${task.title}</div>
+                                <div class="task-due">${task.due}</div>
+                            </div>
+                            <button onclick="deleteTask(${selectedCourse.id}, ${task.id})" style="background: none; border: none; color: #a3a3a3; cursor: pointer;">
+                                <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                ` : ''}
+
+                ${completedTasks.length > 0 ? `
+                    <h4 style="font-size: 0.875rem; color: #a3a3a3; margin-bottom: 1rem; margin-top: 2rem;">Completadas</h4>
+                    ${completedTasks.map(task => `
+                        <div class="task-item" style="opacity: 0.6;">
+                            <div class="task-checkbox done" onclick="toggleTask(${selectedCourse.id}, ${task.id})"></div>
+                            <div class="task-info">
+                                <div class="task-title" style="text-decoration: line-through;">${task.title}</div>
+                                <div class="task-due">Completada</div>
+                            </div>
+                            <button onclick="deleteTask(${selectedCourse.id}, ${task.id})" style="background: none; border: none; color: #a3a3a3; cursor: pointer;">
+                                <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                ` : ''}
+            </div>
+        `;
+    }
+
+    if (currentCourseTab === 'recursos') {
+        return `
+            <div style="text-align: center; padding: 4rem 2rem; background: white; border: 1px dashed #e5e5e5; border-radius: 1rem;">
+                <i data-lucide="folder-open" style="width: 48px; height: 48px; color: #d4d4d4; margin-bottom: 1rem;"></i>
+                <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Sin Recursos</h3>
+                <p style="color: #a3a3a3; font-size: 0.875rem;">Aún no se han cargado documentos o enlaces para esta materia.</p>
+            </div>
+        `;
+    }
+
+    if (currentCourseTab === 'herramientas') {
+        if (!selectedCourse.hasTools) {
+            return `
+                <div style="text-align: center; padding: 4rem 2rem; background: white; border: 1px solid #e5e5e5; border-radius: 1rem;">
+                    <i data-lucide="wrench" style="width: 48px; height: 48px; color: #d4d4d4; margin-bottom: 1rem;"></i>
+                    <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Herramientas no disponibles</h3>
+                    <p style="color: #a3a3a3; font-size: 0.875rem;">Esta materia no requiere herramientas de cálculo especializadas.</p>
+                </div>
+            `;
+        }
+        return `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;" class="hover:border-black">
+                    <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <i data-lucide="calculator" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Calculadora de Producción</h3>
+                    <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Analiza funciones Cobb-Douglas y calcula óptimos técnicos.</p>
+                    <button class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
+                </div>
+                
+                <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; opacity: 0.6;">
+                    <div style="width: 3rem; height: 3rem; background: #f5f5f5; color: #a3a3a3; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <i data-lucide="lock" style="width: 24px; height: 24px;"></i>
+                    </div>
+                    <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Simulador de Costos</h3>
+                    <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Próximamente disponible en el segundo parcial.</p>
+                </div>
+            </div>
+        `;
+    }
 }
 
 // CRUD Operations

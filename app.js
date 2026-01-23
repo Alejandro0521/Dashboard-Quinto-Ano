@@ -836,12 +836,27 @@ function renderProductionAnalyzer() {
                                     </div>
 
                                     <!-- Additional Stats Full Width -->
-                                    <div style="grid-column: span 2; padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
-                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem; border-bottom: 1px solid #f5f5f5; padding-bottom: 0.5rem;">
-                                            <span>Max PMF</span>
-                                            <span style="font-family: monospace;">X=${typeof analysisState.result.maxPMF.x === 'number' ? analysisState.result.maxPMF.x.toFixed(2) : analysisState.result.maxPMF.x} | Val=${typeof analysisState.result.maxPMF.val === 'number' ? analysisState.result.maxPMF.val.toFixed(2) : analysisState.result.maxPMF.val}</span>
+                                    <div style="grid-column: span 2; padding: 1rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #fff;">
+                                        
+                                        <!-- Current Stage Indicator -->
+                                        <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f5f5f5;">
+                                            <div style="font-size: 0.75rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Etapa Actual</div>
+                                            <div style="font-size: 1.125rem; font-weight: 600; color: #171717;">${analysisState.result.currentStage}</div>
                                         </div>
-                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252;">
+
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem;">
+                                            <span>Fin Etapa 1 (Máx PFP)</span>
+                                            <span style="font-family: monospace;">X=${analysisState.result.stage1End}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem;">
+                                            <span>Fin Etapa 2 (PMF=0)</span>
+                                            <span style="font-family: monospace;">X=${analysisState.result.stage2End}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-top: 1rem; padding-top: 0.5rem; border-top: 1px dashed #e5e5e5;">
+                                            <span>Punto Máximo PMF</span>
+                                            <span style="font-family: monospace;">X=${typeof analysisState.result.maxPMF.x === 'number' ? parseFloat(analysisState.result.maxPMF.x.toFixed(4)) : analysisState.result.maxPMF.x} | Val=${typeof analysisState.result.maxPMF.val === 'number' ? parseFloat(analysisState.result.maxPMF.val.toFixed(4)) : analysisState.result.maxPMF.val}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.875rem; color: #525252; margin-top: 0.5rem;">
                                             <span>Inicio Rend. Decrecientes</span>
                                             <span style="font-family: monospace;">X=${analysisState.result.diminishingStart}</span>
                                         </div>

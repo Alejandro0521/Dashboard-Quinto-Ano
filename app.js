@@ -97,6 +97,7 @@ let currentUser = null;
 let userData = null;
 let currentView = 'dashboard';
 let selectedCourse = null;
+let currentTool = null;
 
 // Auth State Observer
 onAuthStateChanged(auth, async (user) => {
@@ -218,6 +219,9 @@ function renderView() {
             break;
         case 'course':
             content.innerHTML = renderCourseDetail();
+            break;
+        case 'tool':
+            content.innerHTML = renderTool();
             break;
     }
 
@@ -528,14 +532,14 @@ function renderCourseTabContent(activeTasks, completedTasks) {
         }
         return `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
-                <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;" class="hover:border-black">
-                    <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
-                        <i data-lucide="calculator" style="width: 24px; height: 24px;"></i>
+                    <div class="hover:border-black" style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;">
+                        <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="calculator" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Calculadora de Producción</h3>
+                        <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Analiza funciones Cobb-Douglas y calcula óptimos técnicos.</p>
+                        <button onclick="openTool('production_analyzer')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
                     </div>
-                    <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Calculadora de Producción</h3>
-                    <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Analiza funciones Cobb-Douglas y calcula óptimos técnicos.</p>
-                    <button class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
-                </div>
                 
                 <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; opacity: 0.6;">
                     <div style="width: 3rem; height: 3rem; background: #f5f5f5; color: #a3a3a3; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
@@ -549,7 +553,163 @@ function renderCourseTabContent(activeTasks, completedTasks) {
     }
 }
 
-// CRUD Operations
+// Tool Logic
+window.openTool = (toolId) => {
+    currentTool = toolId;
+    currentView = 'tool';
+    renderView();
+};
+
+function renderTool() {
+    if (currentTool === 'production_analyzer') {
+        return renderProductionAnalyzer();
+    }
+    return '';
+}
+
+// Variables for Calculator State
+let analysisState = {
+    a: 0,
+    b: 10,
+    c: 0.5,
+    x: 5,
+    result: null
+};
+
+window.calculateProduction = () => {
+    const a = parseFloat(document.getElementById('inputA').value) || 0;
+    const b = parseFloat(document.getElementById('inputB').value) || 0;
+    const c = parseFloat(document.getElementById('inputC').value) || 0;
+    const x = parseFloat(document.getElementById('inputX').value) || 0;
+
+    analysisState = { a, b, c, x };
+
+    // Formulas: Q = a + bX - cX²
+    const Q = a + (b * x) - (c * Math.pow(x, 2));
+    // PFP = Q / X
+    const PFP = x !== 0 ? Q / x : 0;
+    // PMF = b - 2cX (Derivative)
+    const PMF = b - (2 * c * x);
+    // Ep = PMF / PFP
+    const Ep = PFP !== 0 ? PMF / PFP : 0;
+
+    analysisState.result = {
+        Q: Q.toFixed(2),
+        PFP: PFP.toFixed(2),
+        PMF: PMF.toFixed(2),
+        Ep: Ep.toFixed(2)
+    };
+
+    renderView(); // Re-render to show results
+};
+
+function renderProductionAnalyzer() {
+    return `
+        <div style="max-width: 64rem; margin: 0 auto; padding-bottom: 4rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                <button onclick="viewCourse(1)" style="background: none; border: none; color: #a3a3a3; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+                    Volver al Curso
+                </button>
+                <div style="font-size: 0.875rem; color: #a3a3a3;">Unidad 1 / Analizador de Funciones</div>
+            </div>
+
+            <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Analizador de Funciones</h1>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                <!-- Sidebar Inputs -->
+                <div>
+                    <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">Configuración</h3>
+                        
+                        <div class="form-group">
+                            <label>Cultivo</label>
+                            <select id="cropType" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                <option>Maíz</option>
+                                <option>Trigo</option>
+                                <option>Sorgo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label>Tipo de Función</label>
+                            <div style="padding: 0.75rem; background: #f5f5f5; border-radius: 0.5rem; font-family: monospace; font-size: 0.875rem; border: 1px solid #e5e5e5;">
+                                Cuadrática<br>
+                                <span style="color: #666;">Q = a + bX - cX²</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem;">
+                        <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">Parámetros</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>a (const)</label>
+                                <input type="number" id="inputA" value="${analysisState.a}" step="0.1" onchange="calculateProduction()" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>b (linear)</label>
+                                <input type="number" id="inputB" value="${analysisState.b}" step="0.1" onchange="calculateProduction()" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>c (quad)</label>
+                                <input type="number" id="inputC" value="${analysisState.c}" step="0.01" onchange="calculateProduction()" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>Nivel Insumo (X)</label>
+                                <input type="number" id="inputX" value="${analysisState.x}" min="0" onchange="calculateProduction()" class="form-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Area -->
+                <div>
+                     ${analysisState.result ? `
+                        <div style="background: #171717; color: white; padding: 2rem; border-radius: 1rem; margin-bottom: 2rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem;">Resultados Instantáneos</h3>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+                                <div>
+                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Producción Total (Q)</div>
+                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.Q}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Producto Promedio (PFP)</div>
+                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.PFP}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Producto Marginal (PMF)</div>
+                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.PMF}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Elasticidad (Ep)</div>
+                                    <div style="font-size: 2.5rem; font-weight: 300;">${analysisState.result.Ep}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid #e5e5e5; padding: 2rem; border-radius: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #f59e0b;"></i>
+                                Ley de Rendimientos Decrecientes
+                            </h3>
+                            <p style="color: #666; line-height: 1.6;">
+                                En funciones cuadráticas, los rendimientos decrecientes inician inmediatamente cuando <strong>c > 0</strong>, ya que el Producto Marginal (PMF) siempre es decreciente conforme aumenta X.
+                            </p>
+                        </div>
+                     ` : `
+                        <div style="height: 100%; border: 2px dashed #e5e5e5; border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #a3a3a3; min-height: 400px;">
+                            <i data-lucide="bar-chart-2" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+                            <p>Ajusta los valores para ver los resultados</p>
+                            <button onclick="calculateProduction()" class="btn-primary" style="margin-top: 1rem;">Calcular Ahora</button>
+                        </div>
+                     `}
+                </div>
+            </div>
+        </div>
+    `;
+}
 window.viewCourse = (courseId) => {
     selectedCourse = userData.courses.find(c => c.id === courseId);
     currentView = 'course';

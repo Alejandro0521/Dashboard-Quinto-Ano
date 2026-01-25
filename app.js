@@ -541,12 +541,13 @@ function renderCourseTabContent(activeTasks, completedTasks) {
                         <button onclick="openTool('production_analyzer')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
                     </div>
                 
-                <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; opacity: 0.6;">
-                    <div style="width: 3rem; height: 3rem; background: #f5f5f5; color: #a3a3a3; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
-                        <i data-lucide="lock" style="width: 24px; height: 24px;"></i>
+                <div class="hover:border-black" style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;">
+                    <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <i data-lucide="dollar-sign" style="width: 24px; height: 24px;"></i>
                     </div>
                     <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Simulador de Costos</h3>
-                    <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Próximamente disponible en el segundo parcial.</p>
+                    <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Calcula costos fijos, variables, totales, medios y marginales.</p>
+                    <button onclick="openTool('cost_simulator')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
                 </div>
             </div>
         `;
@@ -564,6 +565,9 @@ function renderTool() {
     if (currentTool === 'production_analyzer') {
         return renderProductionAnalyzer();
     }
+    if (currentTool === 'cost_simulator') {
+        return renderCostSimulator();
+    }
     return '';
 }
 
@@ -573,6 +577,15 @@ let analysisState = {
     functionType: 'quadratic', // quadratic, cubic, cobb-douglas
     params: { a: 0, b: 10, c: 0.5, d: 0.02, alpha: 1, beta: 0.5 },
     x: 5,
+    result: null
+};
+
+// Variables for Cost Simulator State
+let costState = {
+    product: 'Producto A',
+    fixedCost: 1000,
+    variableCostPerUnit: 50,
+    quantity: 20,
     result: null
 };
 
@@ -911,6 +924,227 @@ function renderFunctionInputs() {
         `;
     }
 }
+
+// Cost Simulator Functions
+window.calculateCosts = () => {
+    const fixedCost = parseFloat(document.getElementById('fixedCost').value) || 0;
+    const variableCostPerUnit = parseFloat(document.getElementById('variableCostPerUnit').value) || 0;
+    const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+    const product = document.getElementById('productType').value;
+
+    costState.fixedCost = fixedCost;
+    costState.variableCostPerUnit = variableCostPerUnit;
+    costState.quantity = quantity;
+    costState.product = product;
+
+    // Calcular costos
+    const variableCost = variableCostPerUnit * quantity;
+    const totalCost = fixedCost + variableCost;
+    const averageCost = quantity > 0 ? totalCost / quantity : 0;
+    const averageVariableCost = quantity > 0 ? variableCost / quantity : 0;
+    const averageFixedCost = quantity > 0 ? fixedCost / quantity : 0;
+    const marginalCost = variableCostPerUnit; // En modelo lineal, CMg = CVu
+
+    // Datos para la gráfica
+    const chartLabels = [];
+    const dataCT = [];
+    const dataCV = [];
+    const dataCF = [];
+    const dataCMe = [];
+    const dataCMg = [];
+
+    const maxQ = Math.max(quantity * 2, 50);
+    const step = maxQ / 50;
+
+    for (let q = 0; q <= maxQ; q += step) {
+        const cv = variableCostPerUnit * q;
+        const ct = fixedCost + cv;
+        const cme = q > 0 ? ct / q : 0;
+        const cmg = variableCostPerUnit;
+
+        chartLabels.push(q.toFixed(1));
+        dataCT.push(ct);
+        dataCV.push(cv);
+        dataCF.push(fixedCost);
+        dataCMe.push(cme);
+        dataCMg.push(cmg);
+    }
+
+    costState.result = {
+        fixedCost: parseFloat(fixedCost.toFixed(2)),
+        variableCost: parseFloat(variableCost.toFixed(2)),
+        totalCost: parseFloat(totalCost.toFixed(2)),
+        averageCost: parseFloat(averageCost.toFixed(2)),
+        averageVariableCost: parseFloat(averageVariableCost.toFixed(2)),
+        averageFixedCost: parseFloat(averageFixedCost.toFixed(2)),
+        marginalCost: parseFloat(marginalCost.toFixed(2)),
+        quantity
+    };
+
+    renderView();
+    
+    // Render Chart
+    setTimeout(() => {
+        if (typeof renderCostChart === 'function') {
+            renderCostChart(chartLabels, dataCT, dataCV, dataCF, dataCMe, dataCMg);
+        }
+    }, 100);
+};
+
+function renderCostSimulator() {
+    return `
+        <div style="max-width: 64rem; margin: 0 auto; padding-bottom: 4rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                <button onclick="viewCourse(1)" style="background: none; border: none; color: #a3a3a3; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+                    Volver al Curso
+                </button>
+                <div style="font-size: 0.875rem; color: #a3a3a3;">Unidad 2 / Simulador de Costos</div>
+            </div>
+
+            <!-- Header Card -->
+            <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; overflow: hidden; margin-bottom: 2rem;">
+                <div style="background: #fafafa; padding: 1rem; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.5rem;">💰</span>
+                    <h2 style="font-size: 1.125rem; font-weight: 500;">Análisis de Costos de Producción</h2>
+                </div>
+                
+                <div class="analyzer-wrapper" style="padding: 2rem;">
+                    <!-- GRAPH SECTION -->
+                    ${costState.result ? `
+                    <div class="chart-container-large">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                    ` : ''}
+
+                    <!-- CONTROL & METRICS GRID -->
+                    <div class="analyzer-grid" style="border-top: ${costState.result ? '1px solid #e5e5e5' : 'none'}; padding-top: ${costState.result ? '2rem' : '0'};">
+                        
+                        <!-- LEFT COLUMN: INPUTS -->
+                        <div>
+                            <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">1. Configuración</h3>
+                            
+                            <div class="form-group">
+                                <label>Tipo de producto:</label>
+                                <select id="productType" class="form-select" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; margin-bottom: 1rem;">
+                                    <option ${costState.product === 'Producto A' ? 'selected' : ''}>Producto A</option>
+                                    <option ${costState.product === 'Producto B' ? 'selected' : ''}>Producto B</option>
+                                    <option ${costState.product === 'Servicio' ? 'selected' : ''}>Servicio</option>
+                                    <option ${costState.product === 'Manufactura' ? 'selected' : ''}>Manufactura</option>
+                                </select>
+                            </div>
+
+                            <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 0.75rem; border: 1px dashed #d4d4d4;">
+                                <label style="display: block; margin-bottom: 1rem; font-weight: 500;">Parámetros de Costos:</label>
+                                
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label style="display: flex; justify-content: space-between;">
+                                        <span>Costo Fijo (CF)</span>
+                                        <span style="color: #a3a3a3; font-size: 0.75rem;">($)</span>
+                                    </label>
+                                    <input type="number" id="fixedCost" value="${costState.fixedCost}" min="0" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                    <p style="color: #737373; font-size: 0.75rem; margin-top: 0.25rem;">No varía con la cantidad producida</p>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label style="display: flex; justify-content: space-between;">
+                                        <span>Costo Variable Unitario (CVu)</span>
+                                        <span style="color: #a3a3a3; font-size: 0.75rem;">($/unidad)</span>
+                                    </label>
+                                    <input type="number" id="variableCostPerUnit" value="${costState.variableCostPerUnit}" min="0" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                    <p style="color: #737373; font-size: 0.75rem; margin-top: 0.25rem;">Costo por cada unidad adicional</p>
+                                </div>
+
+                                <div class="form-group" style="padding-top: 1rem; border-top: 1px solid #e5e5e5;">
+                                    <label style="display: flex; justify-content: space-between;">
+                                        <span>Cantidad a Producir (Q)</span>
+                                        <span style="color: #a3a3a3; font-size: 0.75rem;">(unidades)</span>
+                                    </label>
+                                    <input type="number" id="quantity" value="${costState.quantity}" min="0" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                </div>
+                            </div>
+
+                            <button onclick="calculateCosts()" class="btn-primary" style="width: 100%; margin-top: 1.5rem; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                <i data-lucide="calculator" style="width: 18px; height: 18px;"></i>
+                                Calcular Costos
+                            </button>
+                        </div>
+
+                        <!-- RIGHT COLUMN: METRICS -->
+                        <div style="border-left: 1px solid #e5e5e5; padding-left: 2rem;">
+                            <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">2. Resultados</h3>
+                            
+                            ${costState.result ? `
+                                <div style="display: grid; gap: 1rem;">
+                                    <!-- Costos Totales -->
+                                    <div style="background: #fafafa; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                        <h4 style="font-size: 0.75rem; color: #737373; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">Costos Totales</h4>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">CF</div>
+                                                <div style="font-size: 1.25rem; font-weight: 600; color: #dc2626;">$${costState.result.fixedCost}</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">CV</div>
+                                                <div style="font-size: 1.25rem; font-weight: 600; color: #f59e0b;">$${costState.result.variableCost}</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">CT</div>
+                                                <div style="font-size: 1.25rem; font-weight: 600; color: #171717;">$${costState.result.totalCost}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Costos Medios -->
+                                    <div style="background: #fff; padding: 1.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                                        <h4 style="font-size: 0.75rem; color: #737373; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">Costos Medios (por unidad)</h4>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                                            <div>
+                                                <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">CFMe</div>
+                                                <div style="font-size: 1.25rem; font-weight: 600; color: #dc2626;">$${costState.result.averageFixedCost}</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">CVMe</div>
+                                                <div style="font-size: 1.25rem; font-weight: 600; color: #f59e0b;">$${costState.result.averageVariableCost}</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">CMe</div>
+                                                <div style="font-size: 1.25rem; font-weight: 600; color: #171717;">$${costState.result.averageCost}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Costo Marginal -->
+                                    <div style="background: #f0fdf4; padding: 1.5rem; border: 2px solid #16a34a; border-radius: 0.5rem;">
+                                        <h4 style="font-size: 0.75rem; color: #15803d; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Costo Marginal</h4>
+                                        <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                                            <div style="font-size: 2rem; font-weight: 700; color: #16a34a;">$${costState.result.marginalCost}</div>
+                                            <div style="font-size: 0.875rem; color: #15803d;">por unidad adicional</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resumen -->
+                                    <div style="background: #fafafa; padding: 1rem; border-radius: 0.5rem; border: 1px dashed #d4d4d4;">
+                                        <p style="font-size: 0.875rem; color: #525252; line-height: 1.6;">
+                                            <strong>Análisis:</strong> Para producir <strong>${costState.result.quantity}</strong> unidades, el costo total es <strong>$${costState.result.totalCost}</strong> 
+                                            (CF: $${costState.result.fixedCost} + CV: $${costState.result.variableCost}). 
+                                            El costo promedio por unidad es <strong>$${costState.result.averageCost}</strong>.
+                                        </p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="height: 100%; min-height: 300px; display: flex; align-items: center; justify-content: center; color: #a3a3a3; background: #fafafa; border-radius: 1rem; border: 1px dashed #d4d4d4;">
+                                    <p>Configura los parámetros y presiona "Calcular Costos"</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 window.viewCourse = (courseId) => {
     selectedCourse = userData.courses.find(c => c.id === courseId);
     currentView = 'course';
@@ -1095,6 +1329,103 @@ window.renderChart = (labels, dataQ, dataPFP, dataPMF) => {
                     grid: {
                         drawOnChartArea: false,
                     },
+                }
+            }
+        }
+    });
+}
+
+// Chart Instance for Cost Simulator
+let costChart = null;
+
+window.renderCostChart = (labels, dataCT, dataCV, dataCF, dataCMe, dataCMg) => {
+    const ctx = document.getElementById('costChart');
+    if (!ctx) return;
+
+    if (costChart) {
+        costChart.destroy();
+    }
+
+    costChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Costo Total (CT)',
+                    data: dataCT,
+                    borderColor: '#171717', // Black
+                    backgroundColor: 'rgba(23, 23, 23, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Costo Variable (CV)',
+                    data: dataCV,
+                    borderColor: '#f59e0b', // Orange
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Costo Fijo (CF)',
+                    data: dataCF,
+                    borderColor: '#dc2626', // Red
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Costo Medio (CMe)',
+                    data: dataCMe,
+                    borderColor: '#2563eb', // Blue
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Costo Marginal (CMg)',
+                    data: dataCMg,
+                    borderColor: '#16a34a', // Green
+                    borderWidth: 2,
+                    borderDash: [3, 3],
+                    tension: 0,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Cantidad (Q)' }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: { display: true, text: 'Costos Totales ($)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: { display: true, text: 'Costos Medios/Marginales ($/unidad)' },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
                 }
             }
         }

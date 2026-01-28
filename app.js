@@ -94,6 +94,7 @@ const INITIAL_DATA = {
 };
 
 let currentUser = null;
+let currentUserName = null;
 let userData = null;
 let currentView = 'dashboard';
 let selectedCourse = null;
@@ -176,7 +177,9 @@ async function loadUserData() {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-        userData = docSnap.data().data;
+        const docData = docSnap.data();
+        userData = docData.data;
+        currentUserName = docData.name || (currentUser.email ? currentUser.email.split('@')[0] : 'Estudiante');
     } else {
         userData = INITIAL_DATA;
         await saveUserData();
@@ -236,7 +239,7 @@ function renderDashboard() {
     const avgGrade = (userData.courses.reduce((sum, c) => sum + c.grade, 0) / userData.courses.length).toFixed(1);
 
     return `
-        <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Hola, Estudiante.</h1>
+        <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Hola, ${currentUserName || 'Estudiante'}.</h1>
         
         <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
             <div style="background: linear-gradient(135deg, #171717 0%, #404040 100%); color: white; padding: 2rem; border-radius: 1rem;">
@@ -1231,6 +1234,10 @@ window.openEditCourseModal = (courseId) => {
                         <label>Progreso (%)</label>
                         <input type="number" min="0" max="100" id="courseProgress" value="${course.progress}" required>
                     </div>
+                    <div class="form-group">
+                        <label>Profesor</label>
+                        <input type="text" id="courseProfessor" value="${course.professor}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;" required>
+                    </div>
                     <div class="modal-buttons">
                         <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
                         <button type="submit" class="btn-primary">Guardar</button>
@@ -1246,6 +1253,7 @@ window.updateCourse = async (event, courseId) => {
     const course = userData.courses.find(c => c.id === courseId);
     course.grade = parseFloat(document.getElementById('courseGrade').value);
     course.progress = parseInt(document.getElementById('courseProgress').value);
+    course.professor = document.getElementById('courseProfessor').value;
 
     await saveUserData();
     closeModal();

@@ -240,32 +240,14 @@ function renderDashboard() {
 
     return `
         <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Hola, ${currentUserName || 'Estudiante'}.</h1>
-        
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
-            <div style="background: linear-gradient(135deg, #171717 0%, #404040 100%); color: white; padding: 2rem; border-radius: 1rem;">
-                <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem;">Próximas Entregas</h3>
-                ${pendingTasks.length > 0 ? pendingTasks.map(t => `
-                    <div style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 0.75rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 2rem; height: 2rem; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">
-                            ${t.courseIcon}
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-size: 0.875rem; font-weight: 500;">${t.title}</div>
-                            <div style="font-size: 0.625rem; color: rgba(255,255,255,0.6);">${t.courseName}</div>
-                        </div>
-                        <div style="padding: 0.25rem 0.5rem; background: ${t.status === 'urgent' ? '#ef4444' : 'rgba(0,0,0,0.3)'}; border-radius: 0.25rem; font-size: 0.625rem; font-weight: bold;">
-                            ${t.due}
-                        </div>
-                    </div>
-                `).join('') : '<p style="color: rgba(255,255,255,0.6); font-size: 0.875rem; font-style: italic;">¡Todo despejado!</p>'}
-            </div>
-            
+
+        <div style="margin-bottom: 2rem; max-width: 20rem;">
             <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem;">
                 <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Promedio General</div>
                 <div style="font-size: 2.5rem; font-weight: 300;">${avgGrade}</div>
             </div>
         </div>
-        
+
         <h3 style="font-size: 1.125rem; font-weight: 300; margin-bottom: 1rem;">Materias Activas</h3>
         <div class="courses-grid">
             ${userData.courses.map(course => `
@@ -403,7 +385,10 @@ function renderCourseDetail() {
             
             <div style="margin-bottom: 2rem;">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">${selectedCourse.icon}</div>
-                <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 0.5rem;">${selectedCourse.name}</h1>
+                <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
+                    <input id="courseNameInput" type="text" value="${selectedCourse.name}" style="font-size:1.5rem; font-weight:300; border:none; outline:none; padding:0;">
+                    <button onclick="saveCourseName(${selectedCourse.id})" class="btn-primary" style="padding:0.25rem 0.5rem; font-size:0.875rem;">Guardar</button>
+                </div>
                 <p style="color: #a3a3a3; font-size: 0.875rem;">${selectedCourse.description}</p>
             </div>
 
@@ -447,16 +432,20 @@ function renderCourseTabContent(activeTasks, completedTasks) {
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
                     <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
                         <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Profesor</div>
-                        <div style="font-size: 1.125rem; font-weight: 500;">${selectedCourse.professor}</div>
+                        <input id="courseProfessorInput" type="text" value="${selectedCourse.professor || ''}" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
                     </div>
                     <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
-                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Calificación Actual</div>
-                        <div style="font-size: 1.5rem; font-weight: 300;">${selectedCourse.grade}</div>
+                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Correo</div>
+                        <input id="courseProfessorEmail" type="email" value="${selectedCourse.professorEmail || ''}" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
                     </div>
                     <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
-                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Progreso</div>
-                        <div style="font-size: 1.5rem; font-weight: 300;">${selectedCourse.progress}%</div>
+                        <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Teléfono</div>
+                        <input id="courseProfessorPhone" type="text" value="${selectedCourse.professorPhone || ''}" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
                     </div>
+                </div>
+                <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+                    <button class="btn-primary" onclick="saveCourseContacts(${selectedCourse.id})">Guardar Contacto</button>
+                    <button class="btn-secondary" onclick="renderView()">Cancelar</button>
                 </div>
             </div>
         `;
@@ -1227,16 +1216,16 @@ window.openEditCourseModal = (courseId) => {
                 <h3>Editar ${course.name}</h3>
                 <form onsubmit="updateCourse(event, ${courseId})">
                     <div class="form-group">
-                        <label>Calificación (0-10)</label>
-                        <input type="number" step="0.1" min="0" max="10" id="courseGrade" value="${course.grade}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Progreso (%)</label>
-                        <input type="number" min="0" max="100" id="courseProgress" value="${course.progress}" required>
-                    </div>
-                    <div class="form-group">
                         <label>Profesor</label>
                         <input type="text" id="courseProfessor" value="${course.professor}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Profesor</label>
+                        <input type="email" id="courseProfessorEmailModal" value="${course.professorEmail || ''}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono Profesor</label>
+                        <input type="text" id="courseProfessorPhoneModal" value="${course.professorPhone || ''}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
                     </div>
                     <div class="modal-buttons">
                         <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
@@ -1251,12 +1240,33 @@ window.openEditCourseModal = (courseId) => {
 window.updateCourse = async (event, courseId) => {
     event.preventDefault();
     const course = userData.courses.find(c => c.id === courseId);
-    course.grade = parseFloat(document.getElementById('courseGrade').value);
-    course.progress = parseInt(document.getElementById('courseProgress').value);
     course.professor = document.getElementById('courseProfessor').value;
+    course.professorEmail = document.getElementById('courseProfessorEmailModal').value;
+    course.professorPhone = document.getElementById('courseProfessorPhoneModal').value;
 
     await saveUserData();
     closeModal();
+    renderView();
+};
+
+window.saveCourseName = async (courseId) => {
+    const input = document.getElementById('courseNameInput');
+    if (!input) return;
+    const course = userData.courses.find(c => c.id === courseId);
+    course.name = input.value.trim() || course.name;
+    await saveUserData();
+    renderView();
+};
+
+window.saveCourseContacts = async (courseId) => {
+    const course = userData.courses.find(c => c.id === courseId);
+    const prof = document.getElementById('courseProfessorInput') || document.getElementById('courseProfessor');
+    const email = document.getElementById('courseProfessorEmail');
+    const phone = document.getElementById('courseProfessorPhone');
+    if (prof) course.professor = prof.value;
+    if (email) course.professorEmail = email.value;
+    if (phone) course.professorPhone = phone.value;
+    await saveUserData();
     renderView();
 };
 

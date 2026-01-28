@@ -2,6 +2,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCik-qO0ic1eNCuIayr-chdGvk4Om3wyWk",
@@ -1262,6 +1263,30 @@ window.saveCourseContacts = async (courseId) => {
     if (phone) course.professorPhone = phone.value;
     await saveUserData();
     renderView();
+};
+
+window.uploadResource = async (courseId) => {
+    try {
+        const input = document.getElementById(`resourceInput-${courseId}`);
+        if (!input || !input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        // Create a storage ref and upload
+        const storage = getStorage(app);
+        const path = `users/${currentUser.uid}/courses/${courseId}/resources/${Date.now()}_${file.name}`;
+        const sRef = storageRef(storage, path);
+        await uploadBytes(sRef, file);
+        const url = await getDownloadURL(sRef);
+
+        const course = userData.courses.find(c => c.id === courseId);
+        if (!course.resources) course.resources = [];
+        course.resources.push({ id: Date.now(), name: file.name, url, size: file.size, uploadedAt: Date.now() });
+        await saveUserData();
+        input.value = '';
+        renderView();
+    } catch (err) {
+        console.error('Upload failed', err);
+        alert('Error subiendo archivo: ' + err.message);
+    }
 };
 
 window.closeModal = (event) => {

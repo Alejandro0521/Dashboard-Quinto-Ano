@@ -241,10 +241,28 @@ function renderDashboard() {
     return `
         <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Hola, ${currentUserName || 'Estudiante'}.</h1>
 
-        <div style="margin-bottom: 2rem; max-width: 20rem;">
-            <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem;">
-                <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Promedio General</div>
-                <div style="font-size: 2.5rem; font-weight: 300;">${avgGrade}</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="max-width: 20rem;">
+                <div style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem;">
+                    <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Promedio General</div>
+                    <div style="font-size: 2.5rem; font-weight: 300;">${avgGrade}</div>
+                </div>
+            </div>
+
+            <div>
+                <div style="background: linear-gradient(135deg, #171717 0%, #404040 100%); color: white; padding: 1.25rem; border-radius: 1rem;">
+                    <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 0.75rem;">Próximas Entregas</h3>
+                    ${pendingTasks.length > 0 ? pendingTasks.map(t => `
+                        <div style="background: rgba(255,255,255,0.05); padding: 0.6rem; border-radius: 0.5rem; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.75rem;">
+                            <div style="width:2rem; height:2rem; background: rgba(255,255,255,0.08); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.9rem;">${t.courseIcon}</div>
+                            <div style="flex:1;">
+                                <div style="font-size:0.9rem; font-weight:500;">${t.title}</div>
+                                <div style="font-size:0.75rem; color: rgba(255,255,255,0.7);">${t.courseName}</div>
+                            </div>
+                            <div style="font-size:0.75rem; font-weight:700;">${t.due}</div>
+                        </div>
+                    `).join('') : '<p style="color: rgba(255,255,255,0.7); font-style:italic;">¡Todo despejado!</p>'}
+                </div>
             </div>
         </div>
 

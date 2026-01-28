@@ -249,21 +249,17 @@ function renderDashboard() {
         </div>
 
         <h3 style="font-size: 1.125rem; font-weight: 300; margin-bottom: 1rem;">Materias Activas</h3>
-        <div class="courses-grid">
-            ${userData.courses.map(course => `
-                <div class="course-card" onclick="viewCourse(${course.id})">
-                    <div class="course-header">
-                        <div class="course-icon">${course.icon}</div>
-                        <div class="course-grade">${course.grade}</div>
+            <div class="courses-grid">
+                ${userData.courses.map(course => `
+                    <div class="course-card" onclick="viewCourse(${course.id})">
+                        <div class="course-header">
+                            <div class="course-icon">${course.icon}</div>
+                        </div>
+                        <h3 class="course-name">${course.name}</h3>
+                        <p class="course-professor">${course.professor}</p>
                     </div>
-                    <h3 class="course-name">${course.name}</h3>
-                    <p class="course-professor">${course.professor}</p>
-                    <div class="course-progress">
-                        <div class="course-progress-bar" style="width: ${course.progress}%"></div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
+                `).join('')}
+            </div>
     `;
 }
 
@@ -306,7 +302,6 @@ function renderTasks() {
 
 function renderStats() {
     const avgGrade = (userData.courses.reduce((sum, c) => sum + c.grade, 0) / userData.courses.length).toFixed(1);
-    const avgProgress = Math.round(userData.courses.reduce((sum, c) => sum + c.progress, 0) / userData.courses.length);
 
     return `
         <h1 style="font-size: 2rem; font-weight: 300; margin-bottom: 2rem;">Estadísticas</h1>
@@ -316,10 +311,7 @@ function renderStats() {
                 <div class="stat-label">Promedio General</div>
                 <div class="stat-value">${avgGrade}</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Progreso Promedio</div>
-                <div class="stat-value">${avgProgress}%</div>
-            </div>
+            
             <div class="stat-card">
                 <div class="stat-label">Materias</div>
                 <div class="stat-value">${userData.courses.length}</div>
@@ -337,18 +329,9 @@ function renderStats() {
                         <i data-lucide="edit-2" style="width: 18px; height: 18px;"></i>
                     </button>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">Calificación</div>
-                        <div style="font-size: 1.5rem; font-weight: 300;">${course.grade}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">Progreso</div>
-                        <div style="font-size: 1.5rem; font-weight: 300;">${course.progress}%</div>
-                    </div>
-                </div>
-                <div class="course-progress" style="height: 0.5rem;">
-                    <div class="course-progress-bar" style="width: ${course.progress}%"></div>
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.75rem; color: #a3a3a3; margin-bottom: 0.25rem;">Calificación</div>
+                    <div style="font-size: 1.5rem; font-weight: 300;">${course.grade}</div>
                 </div>
             </div>
         `).join('')}

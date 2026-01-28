@@ -431,22 +431,18 @@ function renderCourseTabContent(activeTasks, completedTasks) {
             <div style="background: white; border: 1px solid #e5e5e5; padding: 2rem; border-radius: 1rem;">
                 <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem;">Información General</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                    <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
+                        <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
                         <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Profesor</div>
-                        <input id="courseProfessorInput" type="text" value="${selectedCourse.professor || ''}" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
+                        <input id="courseProfessorInput" type="text" value="${selectedCourse.professor || ''}" onchange="saveCourseContacts(${selectedCourse.id})" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
                     </div>
                     <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
                         <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Correo</div>
-                        <input id="courseProfessorEmail" type="email" value="${selectedCourse.professorEmail || ''}" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
+                        <input id="courseProfessorEmail" type="email" value="${selectedCourse.professorEmail || ''}" onchange="saveCourseContacts(${selectedCourse.id})" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
                     </div>
                     <div style="padding: 1rem; background: #fafafa; border-radius: 0.5rem;">
                         <div style="font-size: 0.625rem; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Teléfono</div>
-                        <input id="courseProfessorPhone" type="text" value="${selectedCourse.professorPhone || ''}" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
+                        <input id="courseProfessorPhone" type="text" value="${selectedCourse.professorPhone || ''}" onchange="saveCourseContacts(${selectedCourse.id})" class="form-input" style="width:100%; padding:0.5rem; border:1px solid #e5e5e5; border-radius:0.5rem;" />
                     </div>
-                </div>
-                <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-                    <button class="btn-primary" onclick="saveCourseContacts(${selectedCourse.id})">Guardar Contacto</button>
-                    <button class="btn-secondary" onclick="renderView()">Cancelar</button>
                 </div>
             </div>
         `;
@@ -1215,23 +1211,20 @@ window.openEditCourseModal = (courseId) => {
         <div class="modal-overlay" onclick="closeModal(event)">
             <div class="modal" onclick="event.stopPropagation()">
                 <h3>Editar ${course.name}</h3>
-                <form onsubmit="updateCourse(event, ${courseId})">
+                <form>
                     <div class="form-group">
                         <label>Profesor</label>
-                        <input type="text" id="courseProfessor" value="${course.professor}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;" required>
+                        <input type="text" id="courseProfessor" value="${course.professor}" onchange="saveCourseContacts(${courseId})" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;" required>
                     </div>
                     <div class="form-group">
                         <label>Correo Profesor</label>
-                        <input type="email" id="courseProfessorEmailModal" value="${course.professorEmail || ''}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                        <input type="email" id="courseProfessorEmailModal" value="${course.professorEmail || ''}" onchange="saveCourseContacts(${courseId})" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
                     </div>
                     <div class="form-group">
                         <label>Teléfono Profesor</label>
-                        <input type="text" id="courseProfessorPhoneModal" value="${course.professorPhone || ''}" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
+                        <input type="text" id="courseProfessorPhoneModal" value="${course.professorPhone || ''}" onchange="saveCourseContacts(${courseId})" class="form-input" style="padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem;">
                     </div>
-                    <div class="modal-buttons">
-                        <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary">Guardar</button>
-                    </div>
+                    <div style="margin-top:0.75rem; font-size:0.9rem; color:#6b6b6b;">Los cambios se guardan automáticamente al editar.</div>
                 </form>
             </div>
         </div>

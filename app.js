@@ -188,9 +188,10 @@ async function loadUserData() {
 }
 
 async function saveUserData() {
-    await updateDoc(doc(db, 'users', currentUser.uid), {
+    // Use setDoc with merge to ensure document exists and we don't fail on update
+    await setDoc(doc(db, 'users', currentUser.uid), {
         data: userData
-    });
+    }, { merge: true });
 }
 
 // Navigation
@@ -1266,14 +1267,32 @@ window.saveCourseContacts = async (courseId) => {
 };
 
 window.uploadResource = async (courseId) => {
+    // Basic validations and user feedback
+    const input = document.getElementById(`resourceInput-${courseId}`);
+    if (!currentUser) {
+        showToast('Debes iniciar sesión para subir archivos.', false);
+        return;
+    }
+    if (!input || !input.files || input.files.length === 0) {
+        showToast('Selecciona un archivo antes de subir.', false);
+        return;
+    }
+
+    const file = input.files[0];
+    // Optional: size/type checks (example: limit 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+        showToast('Archivo demasiado grande (límite 10MB).', false);
+        return;
+    }
+
     try {
-        const input = document.getElementById(`resourceInput-${courseId}`);
-        if (!input || !input.files || input.files.length === 0) return;
-        const file = input.files[0];
-        // Create a storage ref and upload
+        showToast('Subiendo archivo...', true, 2000);
         const storage = getStorage(app);
         const path = `users/${currentUser.uid}/courses/${courseId}/resources/${Date.now()}_${file.name}`;
         const sRef = storageRef(storage, path);
+
+        // Upload and get URL
         await uploadBytes(sRef, file);
         const url = await getDownloadURL(sRef);
 
@@ -1282,12 +1301,36 @@ window.uploadResource = async (courseId) => {
         course.resources.push({ id: Date.now(), name: file.name, url, size: file.size, uploadedAt: Date.now() });
         await saveUserData();
         input.value = '';
+        showToast('Archivo subido correctamente.', true);
         renderView();
     } catch (err) {
         console.error('Upload failed', err);
-        alert('Error subiendo archivo: ' + err.message);
+        showToast('Error subiendo archivo: ' + (err.message || err), false);
     }
 };
+
+function showToast(message, success = true, duration = 3000) {
+    const id = 'toast-' + Date.now();
+    const el = document.createElement('div');
+    el.id = id;
+    el.textContent = message;
+    el.style.position = 'fixed';
+    el.style.right = '20px';
+    el.style.bottom = '20px';
+    el.style.padding = '0.75rem 1rem';
+    el.style.background = success ? 'rgba(16,185,129,0.95)' : 'rgba(239,68,68,0.95)';
+    el.style.color = 'white';
+    el.style.borderRadius = '0.5rem';
+    el.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)';
+    el.style.zIndex = 9999;
+    el.style.fontSize = '0.9rem';
+    document.body.appendChild(el);
+    setTimeout(() => {
+        el.style.transition = 'opacity 0.3s ease';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+    }, duration);
+}
 
 window.closeModal = (event) => {
     if (!event || event.target.classList.contains('modal-overlay')) {

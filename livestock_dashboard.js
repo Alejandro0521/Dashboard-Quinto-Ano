@@ -40,17 +40,18 @@ function renderLivestockPrices() {
                     ` : ''}
 
                     <!-- Precios de Ganado -->
-                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <i data-lucide="beef" style="width: 20px; height: 20px;"></i>
-                        Precios de Ganado
+                        Precios de Ganado en Pie
                     </h3>
+                    <p style="color: #737373; font-size: 0.875rem; margin-bottom: 1rem;">Precios por kilogramo de animal vivo</p>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
                         ${Object.entries(livestock).map(([key, data]) => `
                             <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                                     <h4 style="font-weight: 500; margin: 0;">${data.nombre}</h4>
                                     <span style="background: #fafafa; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; color: #737373;">
-                                        ${data.fuente || 'SNIIM'}
+                                        En Pie
                                     </span>
                                 </div>
                                 <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
@@ -64,6 +65,9 @@ function renderLivestockPrices() {
                                         Rango: $${data.rango} MXN/kg
                                     </div>
                                 ` : ''}
+                                <div style="color: #a3a3a3; font-size: 0.75rem; margin-top: 0.5rem;">
+                                    Fuente: ${data.fuente || 'SNIIM'}
+                                </div>
                             </div>
                         `).join('')}
                     </div>

@@ -69,6 +69,7 @@ const INITIAL_DATA = {
             grade: 6.5,
             professor: "Dr. Newton",
             description: "Fundamentos matemáticos para estadística inferencial.",
+            hasTools: true,
             tasks: []
         },
         {
@@ -521,8 +522,11 @@ function renderCourseTabContent(activeTasks, completedTasks) {
                 </div>
             `;
         }
-        return `
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+
+        // Tools for Economía de la Producción (ID 1)
+        if (selectedCourse.id === 1) {
+            return `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
                     <div class="hover:border-black" style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;">
                         <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
                             <i data-lucide="calculator" style="width: 24px; height: 24px;"></i>
@@ -532,16 +536,35 @@ function renderCourseTabContent(activeTasks, completedTasks) {
                         <button onclick="openTool('production_analyzer')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
                     </div>
                 
-                <div class="hover:border-black" style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;">
-                    <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
-                        <i data-lucide="dollar-sign" style="width: 24px; height: 24px;"></i>
+                    <div class="hover:border-black" style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;">
+                        <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="dollar-sign" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Simulador de Costos</h3>
+                        <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Calcula costos fijos, variables, totales, medios y marginales.</p>
+                        <button onclick="openTool('cost_simulator')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
                     </div>
-                    <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Simulador de Costos</h3>
-                    <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Calcula costos fijos, variables, totales, medios y marginales.</p>
-                    <button onclick="openTool('cost_simulator')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
                 </div>
-            </div>
-        `;
+            `;
+        }
+
+        // Tools for Teoría Matemática (ID 5)
+        if (selectedCourse.id === 5) {
+            return `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    <div class="hover:border-black" style="background: white; border: 1px solid #e5e5e5; padding: 1.5rem; border-radius: 1rem; transition: all 0.2s; cursor: pointer;">
+                        <div style="width: 3rem; height: 3rem; background: #171717; color: white; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                            <i data-lucide="circle" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Calculadora de Teoría de Conjuntos</h3>
+                        <p style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 1rem;">Resuelve operaciones de conjuntos: intersección, unión, diferencia y complemento.</p>
+                        <button onclick="openTool('set_theory_calculator')" class="btn-primary" style="width: 100%; justify-content: center;">Abrir Herramienta</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `<div style="text-align: center; padding: 2rem; color: #a3a3a3;">No hay herramientas disponibles para esta materia.</div>`;
     }
 }
 
@@ -559,8 +582,12 @@ function renderTool() {
     if (currentTool === 'cost_simulator') {
         return renderCostSimulator();
     }
+    if (currentTool === 'set_theory_calculator') {
+        return renderSetTheoryCalculator();
+    }
     return '';
 }
+
 
 // Variables for Calculator State
 let analysisState = {
@@ -579,6 +606,19 @@ let costState = {
     quantity: 20,
     result: null
 };
+
+// Variables for Set Theory Calculator State
+let setTheoryState = {
+    setA: [],
+    setB: [],
+    setC: [],
+    setD: [],
+    universal: [],
+    operation: '',
+    result: null,
+    vennData: null
+};
+
 
 window.setFunctionType = (type) => {
     analysisState.functionType = type;
@@ -973,7 +1013,7 @@ window.calculateCosts = () => {
     };
 
     renderView();
-    
+
     // Render Chart
     setTimeout(() => {
         if (typeof renderCostChart === 'function') {
@@ -1510,4 +1550,301 @@ window.renderCostChart = (labels, dataCT, dataCV, dataCF, dataCMe, dataCMg) => {
             }
         }
     });
+}
+
+// ============================================
+// SET THEORY CALCULATOR
+// ============================================
+
+// Helper function to parse set input
+window.parseSetInput = (input) => {
+    if (!input || input.trim() === '') return [];
+
+    // Remove braces if present
+    input = input.replace(/[{}]/g, '');
+
+    // Split by comma and parse
+    const elements = input.split(',').map(item => {
+        item = item.trim();
+        // Try to parse as number
+        const num = parseFloat(item);
+        return isNaN(num) ? item : num;
+    }).filter(item => item !== '');
+
+    // Remove duplicates and sort
+    return [...new Set(elements)].sort((a, b) => {
+        if (typeof a === 'number' && typeof b === 'number') return a - b;
+        return String(a).localeCompare(String(b));
+    });
+};
+
+// Set operations
+window.setIntersection = (setA, setB) => {
+    return setA.filter(x => setB.includes(x));
+};
+
+window.setUnion = (setA, setB) => {
+    return [...new Set([...setA, ...setB])].sort((a, b) => {
+        if (typeof a === 'number' && typeof b === 'number') return a - b;
+        return String(a).localeCompare(String(b));
+    });
+};
+
+window.setDifference = (setA, setB) => {
+    return setA.filter(x => !setB.includes(x));
+};
+
+window.setComplement = (setA, universal) => {
+    return universal.filter(x => !setA.includes(x));
+};
+
+// Format set for display
+window.formatSet = (set) => {
+    if (!set || set.length === 0) return '∅';
+    return '{' + set.join(', ') + '}';
+};
+
+// Calculate set operation
+window.calculateSetOperation = () => {
+    // Parse inputs
+    const inputA = document.getElementById('setAInput').value;
+    const inputB = document.getElementById('setBInput').value;
+    const inputC = document.getElementById('setCInput').value;
+    const inputD = document.getElementById('setDInput').value;
+    const inputU = document.getElementById('setUInput').value;
+    const operation = document.getElementById('operationSelect').value;
+
+    setTheoryState.setA = parseSetInput(inputA);
+    setTheoryState.setB = parseSetInput(inputB);
+    setTheoryState.setC = parseSetInput(inputC);
+    setTheoryState.setD = parseSetInput(inputD);
+    setTheoryState.universal = parseSetInput(inputU);
+    setTheoryState.operation = operation;
+
+    const A = setTheoryState.setA;
+    const B = setTheoryState.setB;
+    const C = setTheoryState.setC;
+    const D = setTheoryState.setD;
+    const U = setTheoryState.universal;
+
+    let result = [];
+    let explanation = '';
+
+    // Perform operation based on selection
+    switch (operation) {
+        case 'A∩B':
+            result = setIntersection(A, B);
+            explanation = 'Elementos que están en A Y en B';
+            break;
+        case 'A∪B':
+            result = setUnion(A, B);
+            explanation = 'Elementos que están en A O en B (o en ambos)';
+            break;
+        case 'A-B':
+            result = setDifference(A, B);
+            explanation = 'Elementos que están en A pero NO en B';
+            break;
+        case 'B-A':
+            result = setDifference(B, A);
+            explanation = 'Elementos que están en B pero NO en A';
+            break;
+        case 'A\'':
+            result = setComplement(A, U);
+            explanation = 'Complemento de A (elementos del universo que NO están en A)';
+            break;
+        case 'C∩A':
+            result = setIntersection(C, A);
+            explanation = 'Elementos que están en C Y en A';
+            break;
+        case 'C∪D':
+            result = setUnion(C, D);
+            explanation = 'Elementos que están en C O en D';
+            break;
+        case 'C-A':
+            result = setDifference(C, A);
+            explanation = 'Elementos que están en C pero NO en A';
+            break;
+        case '(A∩B)-(A∩D)':
+            const AB = setIntersection(A, B);
+            const AD = setIntersection(A, D);
+            result = setDifference(AB, AD);
+            explanation = 'Elementos en (A∩B) que NO están en (A∩D)';
+            break;
+        case '(B∩D)\'∩C':
+            const BD = setIntersection(B, D);
+            const BDcomp = setComplement(BD, U);
+            result = setIntersection(BDcomp, C);
+            explanation = 'Elementos del complemento de (B∩D) que están en C';
+            break;
+        case '(A-B)\'∩C':
+            const AmB = setDifference(A, B);
+            const AmBcomp = setComplement(AmB, U);
+            result = setIntersection(AmBcomp, C);
+            explanation = 'Elementos del complemento de (A-B) que están en C';
+            break;
+        case '(C-A)∩D':
+            const CmA = setDifference(C, A);
+            result = setIntersection(CmA, D);
+            explanation = 'Elementos en (C-A) que también están en D';
+            break;
+        case '(A∩D)-C':
+            const ADint = setIntersection(A, D);
+            result = setDifference(ADint, C);
+            explanation = 'Elementos en (A∩D) que NO están en C';
+            break;
+        case '(A∩B)\'-(C∩D)\'':
+            const ABint = setIntersection(A, B);
+            const ABcomp = setComplement(ABint, U);
+            const CDint = setIntersection(C, D);
+            const CDcomp = setComplement(CDint, U);
+            result = setDifference(ABcomp, CDcomp);
+            explanation = 'Complemento de (A∩B) menos el complemento de (C∩D)';
+            break;
+        default:
+            result = [];
+            explanation = 'Selecciona una operación';
+    }
+
+    setTheoryState.result = {
+        set: result,
+        formatted: formatSet(result),
+        explanation: explanation,
+        cardinality: result.length
+    };
+
+    renderView();
+};
+
+function renderSetTheoryCalculator() {
+    return `
+        <div style="max-width: 64rem; margin: 0 auto; padding-bottom: 4rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                <button onclick="viewCourse(5)" style="background: none; border: none; color: #a3a3a3; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+                    Volver al Curso
+                </button>
+                <div style="font-size: 0.875rem; color: #a3a3a3;">Teoría Matemática / Teoría de Conjuntos</div>
+            </div>
+
+            <!-- Header Card -->
+            <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; overflow: hidden; margin-bottom: 2rem;">
+                <div style="background: #fafafa; padding: 1rem; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 1.5rem;">⊕</span>
+                    <h2 style="font-size: 1.125rem; font-weight: 500;">Calculadora de Teoría de Conjuntos</h2>
+                </div>
+                
+                <div style="padding: 2rem;">
+                    <!-- Set Definitions -->
+                    <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">1. Define los Conjuntos</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Conjunto A</label>
+                            <input type="text" id="setAInput" placeholder="2,3,5,7,11,13,17" value="${setTheoryState.setA.join(',')}" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; font-family: monospace;">
+                            <div style="font-size: 0.75rem; color: #a3a3a3; margin-top: 0.25rem;">Ejemplo: 1,2,3,4,5</div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Conjunto B</label>
+                            <input type="text" id="setBInput" placeholder="5,6,7,8,9,10" value="${setTheoryState.setB.join(',')}" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; font-family: monospace;">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Conjunto C</label>
+                            <input type="text" id="setCInput" placeholder="0,1,2,3,4,5,6,7,8,9" value="${setTheoryState.setC.join(',')}" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; font-family: monospace;">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Conjunto D</label>
+                            <input type="text" id="setDInput" placeholder="-6,-4,-2,0,2,4,6,8,10,12" value="${setTheoryState.setD.join(',')}" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; font-family: monospace;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 2rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Conjunto Universal (U) <span style="color: #a3a3a3; font-weight: 400;">(opcional, para complementos)</span></label>
+                        <input type="text" id="setUInput" placeholder="Todos los elementos posibles" value="${setTheoryState.universal.join(',')}" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; font-family: monospace;">
+                    </div>
+                    
+                    <!-- Operation Selection -->
+                    <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">2. Selecciona la Operación</h3>
+                    
+                    <div style="margin-bottom: 2rem;">
+                        <select id="operationSelect" class="form-select" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e5e5; border-radius: 0.5rem; font-size: 1rem;">
+                            <optgroup label="Operaciones Básicas">
+                                <option value="A∩B" ${setTheoryState.operation === 'A∩B' ? 'selected' : ''}>A ∩ B (Intersección)</option>
+                                <option value="A∪B" ${setTheoryState.operation === 'A∪B' ? 'selected' : ''}>A ∪ B (Unión)</option>
+                                <option value="A-B" ${setTheoryState.operation === 'A-B' ? 'selected' : ''}>A - B (Diferencia)</option>
+                                <option value="B-A" ${setTheoryState.operation === 'B-A' ? 'selected' : ''}>B - A (Diferencia)</option>
+                                <option value="A'" ${setTheoryState.operation === "A'" ? 'selected' : ''}>A' (Complemento de A)</option>
+                            </optgroup>
+                            <optgroup label="Otras Combinaciones">
+                                <option value="C∩A" ${setTheoryState.operation === 'C∩A' ? 'selected' : ''}>C ∩ A</option>
+                                <option value="C∪D" ${setTheoryState.operation === 'C∪D' ? 'selected' : ''}>C ∪ D</option>
+                                <option value="C-A" ${setTheoryState.operation === 'C-A' ? 'selected' : ''}>C - A</option>
+                            </optgroup>
+                            <optgroup label="Operaciones Compuestas">
+                                <option value="(A∩B)-(A∩D)" ${setTheoryState.operation === '(A∩B)-(A∩D)' ? 'selected' : ''}>(A ∩ B) - (A ∩ D)</option>
+                                <option value="(B∩D)'∩C" ${setTheoryState.operation === "(B∩D)'∩C" ? 'selected' : ''}>(B ∩ D)' ∩ C</option>
+                                <option value="(A-B)'∩C" ${setTheoryState.operation === "(A-B)'∩C" ? 'selected' : ''}>(A - B)' ∩ C</option>
+                                <option value="(C-A)∩D" ${setTheoryState.operation === '(C-A)∩D' ? 'selected' : ''}>(C - A) ∩ D</option>
+                                <option value="(A∩D)-C" ${setTheoryState.operation === '(A∩D)-C' ? 'selected' : ''}>(A ∩ D) - C</option>
+                                <option value="(A∩B)'-(C∩D)'" ${setTheoryState.operation === "(A∩B)'-(C∩D)'" ? 'selected' : ''}>(A ∩ B)' - (C ∩ D)'</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <button onclick="calculateSetOperation()" class="btn-primary" style="width: 100%; padding: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i data-lucide="play" style="width: 18px; height: 18px;"></i>
+                        Calcular
+                    </button>
+                    
+                    <!-- Results -->
+                    ${setTheoryState.result ? `
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e5e5e5;">
+                            <h3 style="font-size: 0.875rem; letter-spacing: 0.1em; color: #a3a3a3; text-transform: uppercase; margin-bottom: 1rem;">3. Resultado</h3>
+                            
+                            <div style="background: #fafafa; padding: 2rem; border-radius: 0.75rem; border: 2px solid #171717;">
+                                <div style="font-size: 0.875rem; color: #737373; margin-bottom: 0.5rem;">Operación: ${setTheoryState.operation}</div>
+                                <div style="font-size: 2rem; font-weight: 300; font-family: monospace; margin-bottom: 1rem; color: #171717;">${setTheoryState.result.formatted}</div>
+                                <div style="font-size: 0.875rem; color: #525252; margin-bottom: 0.5rem;">${setTheoryState.result.explanation}</div>
+                                <div style="font-size: 0.75rem; color: #a3a3a3;">Cardinalidad: ${setTheoryState.result.cardinality} elemento(s)</div>
+                            </div>
+                            
+                            <!-- Current Sets Display -->
+                            <div style="margin-top: 1.5rem; padding: 1.5rem; background: white; border: 1px solid #e5e5e5; border-radius: 0.75rem;">
+                                <h4 style="font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem;">Conjuntos Actuales:</h4>
+                                <div style="display: grid; gap: 0.5rem; font-family: monospace; font-size: 0.875rem;">
+                                    ${setTheoryState.setA.length > 0 ? `<div><span style="font-weight: 600;">A =</span> ${formatSet(setTheoryState.setA)}</div>` : ''}
+                                    ${setTheoryState.setB.length > 0 ? `<div><span style="font-weight: 600;">B =</span> ${formatSet(setTheoryState.setB)}</div>` : ''}
+                                    ${setTheoryState.setC.length > 0 ? `<div><span style="font-weight: 600;">C =</span> ${formatSet(setTheoryState.setC)}</div>` : ''}
+                                    ${setTheoryState.setD.length > 0 ? `<div><span style="font-weight: 600;">D =</span> ${formatSet(setTheoryState.setD)}</div>` : ''}
+                                    ${setTheoryState.universal.length > 0 ? `<div><span style="font-weight: 600;">U =</span> ${formatSet(setTheoryState.universal)}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="margin-top: 2rem; padding: 3rem; text-align: center; background: #fafafa; border-radius: 0.75rem; border: 1px dashed #d4d4d4;">
+                            <i data-lucide="info" style="width: 48px; height: 48px; color: #d4d4d4; margin-bottom: 1rem;"></i>
+                            <p style="color: #a3a3a3;">Define los conjuntos y selecciona una operación para ver el resultado.</p>
+                        </div>
+                    `}
+                </div>
+            </div>
+            
+            <!-- Quick Examples -->
+            <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem;">
+                <h3 style="font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">💡 Ejemplos Rápidos</h3>
+                <div style="display: grid; gap: 0.75rem; font-size: 0.875rem;">
+                    <div style="padding: 0.75rem; background: #fafafa; border-radius: 0.5rem;">
+                        <strong>Ejercicio 1:</strong> A = {2,3,5,7,11,13,17}, B = {5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30}
+                        <br><span style="color: #737373;">Calcula A ∩ B → Resultado: {5,7,11,13,17}</span>
+                    </div>
+                    <div style="padding: 0.75rem; background: #fafafa; border-radius: 0.5rem;">
+                        <strong>Ejercicio 2:</strong> C = {0,1,2,3,4,5,6,7,8,9}, A = {2,3,5,7,11,13,17}
+                        <br><span style="color: #737373;">Calcula C - A → Resultado: {0,1,4,6,8,9}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 }

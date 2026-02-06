@@ -182,6 +182,27 @@ async function loadUserData() {
         const docData = docSnap.data();
         userData = docData.data;
         currentUserName = docData.name || (currentUser.email ? currentUser.email.split('@')[0] : 'Estudiante');
+
+        // Migrate/sync user data with latest INITIAL_DATA structure
+        let needsUpdate = false;
+
+        // Update each course with new properties from INITIAL_DATA
+        userData.courses = userData.courses.map(userCourse => {
+            const initialCourse = INITIAL_DATA.courses.find(c => c.id === userCourse.id);
+            if (initialCourse) {
+                // Check if hasTools property needs to be added/updated
+                if (initialCourse.hasTools && !userCourse.hasTools) {
+                    needsUpdate = true;
+                    return { ...userCourse, hasTools: true };
+                }
+            }
+            return userCourse;
+        });
+
+        // Save updated data if changes were made
+        if (needsUpdate) {
+            await saveUserData();
+        }
     } else {
         userData = INITIAL_DATA;
         await saveUserData();

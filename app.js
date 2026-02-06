@@ -114,7 +114,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Login Functions
 window.showLoginTab = () => {
     document.getElementById('loginForm').classList.remove('hidden');
     document.getElementById('registerForm').classList.add('hidden');
@@ -129,35 +128,44 @@ window.showRegisterTab = () => {
     document.querySelectorAll('.tab-btn')[1].classList.add('active');
 };
 
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+// Wait for DOM to be ready before attaching event listeners
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEventListeners);
+} else {
+    initializeEventListeners();
+}
 
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        document.getElementById('loginError').textContent = 'Error: ' + error.message;
-    }
-});
+function initializeEventListeners() {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
 
-document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('registerName').value;
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            document.getElementById('loginError').textContent = 'Error: ' + error.message;
+        }
+    });
 
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, 'users', userCredential.user.uid), {
-            name,
-            email,
-            data: INITIAL_DATA
-        });
-    } catch (error) {
-        document.getElementById('registerError').textContent = 'Error: ' + error.message;
-    }
-});
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('registerName').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await setDoc(doc(db, 'users', userCredential.user.uid), {
+                name,
+                email,
+                data: INITIAL_DATA
+            });
+        } catch (error) {
+            document.getElementById('registerError').textContent = 'Error: ' + error.message;
+        }
+    });
+}
 
 window.logout = async () => {
     await signOut(auth);

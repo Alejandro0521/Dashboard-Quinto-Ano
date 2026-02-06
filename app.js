@@ -1912,7 +1912,7 @@ function renderLivestockPrices() {
         loadLivestockPrices();
     }
 
-    const { livestock, feed, lastUpdate, loading } = livestockPricesState;
+    const { enPie, enCanal, deCria, feed, lastUpdate, loading } = livestockPricesState;
 
     return `
         <div style="max-width: 80rem; margin: 0 auto; padding-bottom: 4rem;">
@@ -1946,33 +1946,95 @@ function renderLivestockPrices() {
                         </div>
                     ` : ''}
 
-                    <!-- Precios de Ganado -->
-                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <i data-lucide="beef" style="width: 20px; height: 20px;"></i>
-                        Precios de Ganado
+
+                    <!-- Precios de Ganado en Pie -->
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+                        Ganado en Pie
                     </h3>
+                    <p style="color: #737373; font-size: 0.875rem; margin-bottom: 1rem;">Precios por kilogramo de animal vivo</p>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
-                        ${Object.entries(livestock).map(([key, data]) => `
+                        ${enPie && Object.entries(enPie).map(([key, data]) => `
                             <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                                     <h4 style="font-weight: 500; margin: 0;">${data.nombre}</h4>
-                                    <span style="background: #fafafa; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; color: #737373;">
-                                        ${data.fuente || 'SNIIM'}
+                                    <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
+                                        En Pie
                                     </span>
                                 </div>
                                 <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
-                                    $${data.precio.toFixed(2)}
+                                    $${data.precio.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                                 <div style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 0.5rem;">
                                     ${data.unidad}
                                 </div>
                                 ${data.rango ? `
                                     <div style="color: #737373; font-size: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #f5f5f5;">
-                                        Rango: $${data.rango} MXN/kg
+                                        Rango: $${data.rango} ${data.unidad}
                                     </div>
                                 ` : ''}
                             </div>
-                        `).join('')}
+                        `).join('') || '<p>No hay datos disponibles</p>'}
+                    </div>
+
+                    <!-- Precios de Carne en Canal -->
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="beef" style="width: 20px; height: 20px;"></i>
+                        Carne en Canal
+                    </h3>
+                    <p style="color: #737373; font-size: 0.875rem; margin-bottom: 1rem;">Precios por kilogramo de carne procesada</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
+                        ${enCanal && Object.entries(enCanal).map(([key, data]) => `
+                            <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                    <h4 style="font-weight: 500; margin: 0;">${data.nombre}</h4>
+                                    <span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
+                                        En Canal
+                                    </span>
+                                </div>
+                                <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
+                                    $${data.precio.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </div>
+                                <div style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                    ${data.unidad}
+                                </div>
+                                ${data.rango ? `
+                                    <div style="color: #737373; font-size: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #f5f5f5;">
+                                        Rango: $${data.rango} ${data.unidad}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('') || '<p>No hay datos disponibles</p>'}
+                    </div>
+
+                    <!-- Precios de Ganado de Cría -->
+                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+                        Ganado de Cría
+                    </h3>
+                    <p style="color: #737373; font-size: 0.875rem; margin-bottom: 1rem;">Precios por cabeza para reproducción</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 3rem;">
+                        ${deCria && Object.entries(deCria).map(([key, data]) => `
+                            <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; padding: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                    <h4 style="font-weight: 500; margin: 0;">${data.nombre}</h4>
+                                    <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 500;">
+                                        De Cría
+                                    </span>
+                                </div>
+                                <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">
+                                    $${data.precio.toLocaleString('es-MX')}
+                                </div>
+                                <div style="color: #a3a3a3; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                    ${data.unidad}
+                                </div>
+                                ${data.rango ? `
+                                    <div style="color: #737373; font-size: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #f5f5f5;">
+                                        Rango: $${data.rango} ${data.unidad}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('') || '<p>No hay datos disponibles</p>'}
                     </div>
 
                     <!-- Precios de Alimentos -->
@@ -2034,37 +2096,93 @@ window.loadLivestockPrices = async () => {
         } else {
             // Fallback: datos estáticos del SNIIM
             data = {
-                livestock: {
+                enPie: {
                     bovino: {
-                        precio: 75.50,
+                        precio: 38.50,
                         unidad: 'MXN/kg',
-                        tendencia: 'neutral',
                         nombre: 'Ganado Bovino',
-                        rango: '70-90',
+                        rango: '35-42',
                         fuente: 'SNIIM'
                     },
                     porcino: {
-                        precio: 37.50,
+                        precio: 28.00,
                         unidad: 'MXN/kg',
-                        tendencia: 'neutral',
                         nombre: 'Ganado Porcino',
-                        rango: '35-40',
+                        rango: '25-30',
                         fuente: 'SNIIM'
                     },
                     ovino: {
-                        precio: 57.50,
+                        precio: 45.00,
                         unidad: 'MXN/kg',
-                        tendencia: 'neutral',
                         nombre: 'Ganado Ovino',
-                        rango: '55-60',
+                        rango: '42-48',
                         fuente: 'SNIIM'
                     },
                     pollo: {
-                        precio: 30.00,
+                        precio: 22.00,
                         unidad: 'MXN/kg',
-                        tendencia: 'neutral',
                         nombre: 'Pollo',
-                        rango: '28-32',
+                        rango: '20-24',
+                        fuente: 'SNIIM'
+                    },
+                },
+                enCanal: {
+                    bovino: {
+                        precio: 85.00,
+                        unidad: 'MXN/kg',
+                        nombre: 'Carne de Res',
+                        rango: '80-95',
+                        fuente: 'SNIIM'
+                    },
+                    porcino: {
+                        precio: 55.00,
+                        unidad: 'MXN/kg',
+                        nombre: 'Carne de Cerdo',
+                        rango: '50-60',
+                        fuente: 'SNIIM'
+                    },
+                    ovino: {
+                        precio: 95.00,
+                        unidad: 'MXN/kg',
+                        nombre: 'Carne de Borrego',
+                        rango: '90-100',
+                        fuente: 'SNIIM'
+                    },
+                    pollo: {
+                        precio: 45.00,
+                        unidad: 'MXN/kg',
+                        nombre: 'Carne de Pollo',
+                        rango: '42-48',
+                        fuente: 'SNIIM'
+                    },
+                },
+                deCria: {
+                    bovino: {
+                        precio: 45000,
+                        unidad: 'MXN/cabeza',
+                        nombre: 'Vaca de Cría',
+                        rango: '40,000-50,000',
+                        fuente: 'SNIIM'
+                    },
+                    porcino: {
+                        precio: 8500,
+                        unidad: 'MXN/cabeza',
+                        nombre: 'Cerda de Cría',
+                        rango: '7,500-9,500',
+                        fuente: 'SNIIM'
+                    },
+                    ovino: {
+                        precio: 6500,
+                        unidad: 'MXN/cabeza',
+                        nombre: 'Oveja de Cría',
+                        rango: '6,000-7,000',
+                        fuente: 'SNIIM'
+                    },
+                    caprino: {
+                        precio: 4500,
+                        unidad: 'MXN/cabeza',
+                        nombre: 'Cabra de Cría',
+                        rango: '4,000-5,000',
                         fuente: 'SNIIM'
                     },
                 },
@@ -2102,7 +2220,9 @@ window.loadLivestockPrices = async () => {
             };
         }
 
-        livestockPricesState.livestock = data.livestock;
+        livestockPricesState.enPie = data.enPie;
+        livestockPricesState.enCanal = data.enCanal;
+        livestockPricesState.deCria = data.deCria;
         livestockPricesState.feed = data.feed;
         livestockPricesState.lastUpdate = data.timestamp;
         livestockPricesState.loading = false;

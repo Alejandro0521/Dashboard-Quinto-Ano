@@ -16,6 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Initial Data (7 materias completas)
 const INITIAL_DATA = {
@@ -29,6 +30,7 @@ const INITIAL_DATA = {
             professor: "Dr. Álvarez",
             description: "Teoría de la firma, costos de producción y maximización.",
             hasTools: true,
+            resources: [], // Array to store course resources
             tasks: []
         },
         {
@@ -39,6 +41,7 @@ const INITIAL_DATA = {
             grade: 9.0,
             professor: "Dra. Jiménez",
             description: "Comercio internacional, balanza de pagos y tipos de cambio.",
+            resources: [],
             tasks: []
         },
         {
@@ -49,6 +52,8 @@ const INITIAL_DATA = {
             grade: 7.8,
             professor: "Mtro. Castillo",
             description: "Modelos macroeconómicos dinámicos y política monetaria.",
+            description: "Modelos macroeconómicos dinámicos y política monetaria.",
+            resources: [],
             tasks: []
         },
         {
@@ -91,6 +96,7 @@ const INITIAL_DATA = {
             professor: "Coord. Laboral",
             description: "Prácticas laborales supervisadas.",
             hasTools: true,
+            resources: [],
             tasks: []
         }
     ]
@@ -166,6 +172,135 @@ function initializeEventListeners() {
         }
     });
 }
+
+// Resource Functions
+window.uploadResource = async (courseId) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp';
+
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Show loading state (could be improved with a toast or UI indicator)
+        const btn = document.getElementById('uploadBtn');
+        if (btn) btn.innerText = 'Subiendo...';
+
+        try {
+            // Create storage reference
+            const storagePath = `users/${currentUser.uid}/courses/${courseId}/${Date.now()}_${file.name}`;
+            const fileRef = storageRef(storage, storagePath);
+
+            // Upload file
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+
+            // Create resource object
+            const newResource = {
+                name: file.name,
+                url: url,
+                type: file.type,
+                date: new Date().toISOString(),
+                path: storagePath
+            };
+
+            // Update local state
+            const courseIndex = userData.courses.findIndex(c => c.id === courseId);
+            if (courseIndex === -1) return;
+
+            if (!userData.courses[courseIndex].resources) {
+                userData.courses[courseIndex].resources = [];
+            }
+            userData.courses[courseIndex].resources.push(newResource);
+
+            // Update Firestore
+            await updateDoc(doc(db, 'users', currentUser.uid), {
+                courses: userData.courses
+            });
+
+            // Update UI
+            renderView();
+            alert('Recurso subido correctamente'); // Optional: replace with toast
+
+        } catch (error) {
+            console.error("Error uploading resource:", error);
+            alert('Error al subir el recurso: ' + error.message);
+        }
+    };
+
+    input.click();
+};
+
+window.deleteResource = async (courseId, resourceIndex) => {
+    if (!confirm('¿Estás seguro de eliminar este recurso?')) return;
+
+    try {
+        const courseIndex = userData.courses.findIndex(c => c.id === courseId);
+        if (courseIndex === -1) return;
+
+        // Ensure resources array exists
+        if (!userData.courses[courseIndex].resources) userData.courses[courseIndex].resources = [];
+
+        // Remove from Firestore logic would also ideally remove from Storage
+        // For now, we update the data structure. Storage cleanup is separate or can be added.
+        userData.courses[courseIndex].resources.splice(resourceIndex, 1);
+
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+            courses: userData.courses
+        });
+
+        renderView();
+
+    } catch (error) {
+        console.error("Error deleting resource:", error);
+        alert('Error al eliminar el recurso');
+    }
+};
+
+window.showResourcePreview = (url, type, name) => {
+    const modal = document.createElement('div');
+    modal.id = 'resourcePreviewModal';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8); z-index: 1000;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+    `;
+
+    let content = '';
+
+    if (type.includes('image')) {
+        content = `<img src="${url}" style="max-width: 90%; max-height: 85%; border-radius: 8px;">`;
+    } else if (type.includes('pdf')) {
+        content = `<iframe src="${url}" style="width: 90%; height: 85%; border-radius: 8px; background: white; border: none;"></iframe>`;
+    } else {
+        // Fallback for other files (Office docs, etc.) using Google Docs Viewer
+        // Note: Google Docs Viewer works with publicly accessible URLs. 
+        // Firebase Storage URLs are public but require the token. Usually works.
+        content = `
+            <div style="background: white; padding: 2rem; border-radius: 8px; text-align: center;">
+                <p style="margin-bottom: 1rem;">Vista previa no disponible nativamente para este archivo.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <a href="${url}" target="_blank" class="btn-primary" style="text-decoration: none;">Descargar Archivo</a>
+                    <a href="https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true" target="_blank" class="btn-secondary" style="text-decoration: none;">Intentar abrir con Google Docs</a>
+                </div>
+            </div>
+        `;
+    }
+
+    modal.innerHTML = `
+        <div style="width: 90%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="color: white; margin: 0; font-weight: 500;">${name}</h3>
+            <button onclick="document.getElementById('resourcePreviewModal').remove()" style="background: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+        ${content}
+    `;
+
+    document.body.appendChild(modal);
+    lucide.createIcons();
+};
 
 window.logout = async () => {
     await signOut(auth);
@@ -533,11 +668,50 @@ function renderCourseTabContent(activeTasks, completedTasks) {
     }
 
     if (currentCourseTab === 'recursos') {
+        const resources = selectedCourse.resources || [];
+
         return `
-            <div style="text-align: center; padding: 4rem 2rem; background: white; border: 1px dashed #e5e5e5; border-radius: 1rem;">
-                <i data-lucide="folder-open" style="width: 48px; height: 48px; color: #d4d4d4; margin-bottom: 1rem;"></i>
-                <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Sin Recursos</h3>
-                <p style="color: #a3a3a3; font-size: 0.875rem;">Aún no se han cargado documentos o enlaces para esta materia.</p>
+            <div style="padding-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: 600; font-size: 1.125rem;">Material de Clase</h3>
+                    <button id="uploadBtn" onclick="uploadResource(${selectedCourse.id})" class="btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                        Subir Recurso
+                    </button>
+                </div>
+
+                ${resources.length === 0 ? `
+                    <div style="text-align: center; padding: 4rem 2rem; background: white; border: 1px dashed #e5e5e5; border-radius: 1rem;">
+                        <i data-lucide="folder-open" style="width: 48px; height: 48px; color: #d4d4d4; margin-bottom: 1rem;"></i>
+                        <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Sin Recursos</h3>
+                        <p style="color: #a3a3a3; font-size: 0.875rem;">Sube presentaciones, PDFs o imágenes para esta materia.</p>
+                    </div>
+                ` : `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                        ${resources.map((resource, index) => {
+            let icon = 'file-text';
+            if (resource.type.includes('pdf')) icon = 'file-text';
+            else if (resource.type.includes('image')) icon = 'image';
+            else if (resource.type.includes('presentation') || resource.name.endsWith('.ppt') || resource.name.endsWith('.pptx')) icon = 'presentation';
+
+            return `
+                                <div style="background: white; border: 1px solid #e5e5e5; border-radius: 0.75rem; padding: 1rem; position: relative; group;">
+                                    <button onclick="deleteResource(${selectedCourse.id}, ${index})" style="position: absolute; top: 0.5rem; right: 0.5rem; background: white; border: 1px solid #e5e5e5; border-radius: 0.375rem; padding: 0.25rem; cursor: pointer; color: #ef4444;">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                    
+                                    <div onclick="showResourcePreview('${resource.url}', '${resource.type}', '${resource.name}')" style="cursor: pointer;">
+                                        <div style="background: #f5f5f5; height: 100px; border-radius: 0.5rem; display: flex; justify-content: center; align-items: center; margin-bottom: 0.75rem;">
+                                            <i data-lucide="${icon}" style="width: 40px; height: 40px; color: #a3a3a3;"></i>
+                                        </div>
+                                        <h4 style="font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${resource.name}">${resource.name}</h4>
+                                        <p style="font-size: 0.75rem; color: #a3a3a3;">${new Date(resource.date).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            `;
+        }).join('')}
+                    </div>
+                `}
             </div>
         `;
     }

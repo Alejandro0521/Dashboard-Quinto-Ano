@@ -175,17 +175,30 @@ function initializeEventListeners() {
 
 // Resource Functions
 window.uploadResource = async (courseId) => {
+    // Remove any existing temp inputs
+    const existingInput = document.getElementById('tempUploadInput');
+    if (existingInput) existingInput.remove();
+
     const input = document.createElement('input');
+    input.id = 'tempUploadInput';
     input.type = 'file';
     input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp';
+    input.style.display = 'none';
+    document.body.appendChild(input);
 
     input.onchange = async (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            document.body.removeChild(input);
+            return;
+        }
 
         // Show loading state (could be improved with a toast or UI indicator)
         const btn = document.getElementById('uploadBtn');
-        if (btn) btn.innerText = 'Subiendo...';
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Subiendo...`;
+        }
 
         try {
             // Create storage reference
@@ -226,8 +239,24 @@ window.uploadResource = async (courseId) => {
         } catch (error) {
             console.error("Error uploading resource:", error);
             alert('Error al subir el recurso: ' + error.message);
+            if (btn) btn.innerHTML = `<i data-lucide="upload" style="width: 16px; height: 16px;"></i> Subir Recurso`;
+        } finally {
+            document.body.removeChild(input);
         }
     };
+
+    // Handle cancel
+    window.addEventListener('focus', () => {
+        setTimeout(() => {
+            if (document.body.contains(input)) {
+                // If input is still there after a delay and focus return, it might be a cancel
+                // But safer to just leave it or rely on onchange.
+                // We'll just rely on the fact that if they don't pick a file, nothing happens, 
+                // but we should clean up eventually. 
+                // For now, let's just leave it to be cleaned up by next call's existingInput check
+            }
+        }, 1000);
+    }, { once: true });
 
     input.click();
 };

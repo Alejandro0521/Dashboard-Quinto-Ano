@@ -1,4 +1,23 @@
 // Dashboard de Precios Pecuarios - Con Regiones Norte/Jalisco/Sur
+
+// Estado global del dashboard (debe estar disponible antes que app.js)
+if (typeof livestockPricesState === 'undefined') {
+    var livestockPricesState = {
+        regiones: {},
+        feed: {},
+        comparacion: null,
+        lastUpdate: null,
+        loading: false
+    };
+}
+
+// Funciones globales necesarias
+if (typeof renderView === 'undefined') {
+    var renderView = function () {
+        // Se sobrescribirá por app.js
+    };
+}
+
 function renderLivestockPrices() {
     // Cargar precios si no están cargados
     if (!livestockPricesState.lastUpdate) {

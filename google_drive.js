@@ -1,9 +1,9 @@
 // Google Drive Integration for Course Notes
 // Este módulo maneja la conexión con Google Drive para mostrar apuntes
 
-// Configuración de Google API (se llenará con credenciales del usuario)
-const GOOGLE_CLIENT_ID = ''; // Se agregará después de crear proyecto en Google Cloud
-const GOOGLE_API_KEY = ''; // Se agregará después
+// Configuración de Google API
+const GOOGLE_CLIENT_ID = '595886544015-6tvpb2ns16kr81leek5g6bpgu6t5libp.apps.googleusercontent.com';
+const GOOGLE_API_KEY = ''; // No necesario para OAuth client-side
 const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 
 // Estado de la conexión de Drive

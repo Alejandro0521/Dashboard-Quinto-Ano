@@ -574,6 +574,7 @@ function renderCourseDetail() {
         { id: 'detalles', label: 'Detalles', icon: 'info' },
         { id: 'tareas', label: 'Tareas', icon: 'check-square' },
         { id: 'recursos', label: 'Recursos', icon: 'book-open' },
+        { id: 'apuntes', label: 'Apuntes', icon: 'notebook-pen' },
         { id: 'herramientas', label: 'Herramientas', icon: 'wrench' }
     ];
 
@@ -820,6 +821,26 @@ function renderCourseTabContent(activeTasks, completedTasks) {
         }
 
         return `<div style="text-align: center; padding: 2rem; color: #a3a3a3;">No hay herramientas disponibles para esta materia.</div>`;
+    }
+
+    if (currentCourseTab === 'apuntes') {
+        return `
+            <div style="background: white; border: 1px solid #e5e5e5; padding: 2rem; border-radius: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: 600; font-size: 1.125rem; margin: 0;">Mis Apuntes</h3>
+                    <span style="font-size: 0.75rem; color: #a3a3a3;">Sincronizado con Google Drive</span>
+                </div>
+                ${typeof renderNotesSection === 'function' ? renderNotesSection(selectedCourse.id) : `
+                    <div style="text-align: center; padding: 3rem; color: #737373;">
+                        <i data-lucide="cloud-off" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
+                        <h3 style="margin: 0 0 0.5rem 0; color: #525252;">Google Drive no configurado</h3>
+                        <p style="margin: 0; font-size: 0.875rem;">
+                            La integración con Google Drive estará disponible próximamente.
+                        </p>
+                    </div>
+                `}
+            </div>
+        `;
     }
 }
 

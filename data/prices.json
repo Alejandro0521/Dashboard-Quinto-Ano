@@ -1,0 +1,148 @@
+{
+  "regiones": {
+    "norte": {
+      "nombre": "Región Norte",
+      "icono": "🌵",
+      "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
+      "livestock": {
+        "bovino": {
+          "precio": 50.12,
+          "unidad": "MXN/kg",
+          "tendencia": "neutral",
+          "nombre": "Ganado Bovino",
+          "fuente": "SNIIM Real Data",
+          "rastros": [
+            "Chih. : R.M.TIF 366 Corral de San Ignacio",
+            "Son. : Rastro TIF Bovinos Hermosillo",
+            "N.L. : TIF 15 Emp. Treviño",
+            "Dgo. : Planta TIF No. 546",
+            "Coah. : R.M. Torreón"
+          ]
+        },
+        "porcino": {
+          "precio": 38.5,
+          "unidad": "MXN/kg",
+          "nombre": "Ganado Porcino",
+          "fuente": "Base SNIIM"
+        },
+        "ovino": {
+          "precio": 58.0,
+          "unidad": "MXN/kg",
+          "nombre": "Ganado Ovino",
+          "fuente": "Base SNIIM"
+        },
+        "pollo": {
+          "precio": 31.0,
+          "unidad": "MXN/kg",
+          "nombre": "Pollo",
+          "fuente": "Base SNIIM"
+        }
+      }
+    },
+    "jalisco": {
+      "nombre": "Jalisco",
+      "icono": "🏛️",
+      "estados": "Región Metropolitana de Guadalajara",
+      "especial": true,
+      "livestock": {
+        "bovino": {
+          "precio": 52.53,
+          "unidad": "MXN/kg",
+          "tendencia": "neutral",
+          "nombre": "Ganado Bovino",
+          "fuente": "SNIIM Real Data",
+          "rastros": [
+            "Jal. : R.M. Guadalajara"
+          ]
+        },
+        "porcino": {
+          "precio": 37.5,
+          "unidad": "MXN/kg",
+          "nombre": "Ganado Porcino",
+          "fuente": "Base SNIIM"
+        },
+        "ovino": {
+          "precio": 56.5,
+          "unidad": "MXN/kg",
+          "nombre": "Ganado Ovino",
+          "fuente": "Base SNIIM"
+        },
+        "pollo": {
+          "precio": 30.0,
+          "unidad": "MXN/kg",
+          "nombre": "Pollo",
+          "fuente": "Base SNIIM"
+        }
+      }
+    },
+    "sur": {
+      "nombre": "Región Sur",
+      "icono": "🌴",
+      "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
+      "livestock": {
+        "bovino": {
+          "precio": 46.18,
+          "unidad": "MXN/kg",
+          "tendencia": "neutral",
+          "nombre": "Ganado Bovino",
+          "fuente": "SNIIM Real Data",
+          "rastros": [
+            "Yuc. : Aric Planta TIF 170",
+            "Ver. : Rastro Municipal de Xalapa",
+            "Chis. : TIF 78 Frigorífico del Sureste",
+            "Oax. : Rastro Reforma Agraria"
+          ]
+        },
+        "porcino": {
+          "precio": 36.0,
+          "unidad": "MXN/kg",
+          "nombre": "Ganado Porcino",
+          "fuente": "Base SNIIM"
+        },
+        "ovino": {
+          "precio": 55.0,
+          "unidad": "MXN/kg",
+          "nombre": "Ganado Ovino",
+          "fuente": "Base SNIIM"
+        },
+        "pollo": {
+          "precio": 29.0,
+          "unidad": "MXN/kg",
+          "nombre": "Pollo",
+          "fuente": "Base SNIIM"
+        }
+      }
+    }
+  },
+  "feed": {
+    "maiz": {
+      "precio": 4800,
+      "unidad": "MXN/ton",
+      "nombre": "Maíz"
+    },
+    "sorgo": {
+      "precio": 4200,
+      "unidad": "MXN/ton",
+      "nombre": "Sorgo"
+    },
+    "soya": {
+      "precio": 8500,
+      "unidad": "MXN/ton",
+      "nombre": "Pasta de Soya"
+    },
+    "alfalfa": {
+      "precio": 3800,
+      "unidad": "MXN/ton",
+      "nombre": "Alfalfa"
+    }
+  },
+  "timestamp": "2026-02-06T19:13:26.367919",
+  "source": "SNIIM - Secretaría de Economía México",
+  "comparacion": {
+    "norte_vs_sur_pct": 8.5,
+    "norte_vs_jalisco_pct": -4.6,
+    "jalisco_vs_sur_pct": 13.8,
+    "region_mas_cara": "jalisco",
+    "region_mas_barata": "sur"
+  }
+}

@@ -145,13 +145,20 @@ window.loadLivestockPrices = async () => {
     renderView();
 
     try {
-        // Intentar cargar del backend Flask
-        const response = await fetch('http://localhost:5001/api/prices').catch(() => null);
+        // Primero intentar cargar del JSON en GitHub Pages (actualizado automáticamente)
+        const githubUrl = 'https://alejandro0521.github.io/Dashboard-Quinto-Ano/data/prices.json';
+        let response = await fetch(githubUrl).catch(() => null);
+
+        // Si no funciona GitHub Pages, intentar servidor local
+        if (!response || !response.ok) {
+            response = await fetch('http://localhost:5001/api/prices').catch(() => null);
+        }
 
         let data;
         if (response && response.ok) {
             const result = await response.json();
-            data = result.data;
+            // Si viene de la API local, los datos están en result.data
+            data = result.data || result;
         } else {
             // Fallback: datos estáticos con 3 regiones
             data = {

@@ -176,88 +176,71 @@ function initializeEventListeners() {
 // Global variable to track which course is requesting an upload
 let pendingUploadCourseId = null;
 
-// Initialize global file input
-function initGlobalFileUpload() {
-    let input = document.getElementById('global-file-input');
-    if (!input) {
-        input = document.createElement('input');
-        input.id = 'global-file-input';
-        input.type = 'file';
-        input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp';
-        input.style.display = 'none'; // Hidden but present in DOM
-        document.body.appendChild(input);
+// Setup listener for the static file input in HTML
+function setupFileUploadListener() {
+    const input = document.getElementById('resourceFileInput');
+    if (!input) return;
 
-        input.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            // Clear the value so the same file can be selected again if needed
-            e.target.value = '';
+    input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        e.target.value = ''; // Reset so same file can be selected again
 
-            if (!file || !pendingUploadCourseId) return;
+        if (!file || !pendingUploadCourseId) return;
 
-            const courseId = pendingUploadCourseId;
-            pendingUploadCourseId = null; // Reset
+        const courseId = pendingUploadCourseId;
+        pendingUploadCourseId = null;
 
-            // Show loading state
-            const btn = document.getElementById('uploadBtn');
-            const originalBtnContent = btn ? btn.innerHTML : '';
-            if (btn) btn.innerHTML = `<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Subiendo...`;
+        const btn = document.getElementById('uploadBtn');
+        const originalBtnContent = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<span>Subiendo...</span>';
 
-            try {
-                // Create storage reference
-                const storagePath = `users/${currentUser.uid}/courses/${courseId}/${Date.now()}_${file.name}`;
-                const fileRef = storageRef(storage, storagePath);
+        try {
+            const storagePath = `users/${currentUser.uid}/courses/${courseId}/${Date.now()}_${file.name}`;
+            const fileRef = storageRef(storage, storagePath);
 
-                // Upload file
-                await uploadBytes(fileRef, file);
-                const url = await getDownloadURL(fileRef);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
 
-                // Create resource object
-                const newResource = {
-                    name: file.name,
-                    url: url,
-                    type: file.type,
-                    date: new Date().toISOString(),
-                    path: storagePath
-                };
+            const newResource = {
+                name: file.name,
+                url: url,
+                type: file.type,
+                date: new Date().toISOString(),
+                path: storagePath
+            };
 
-                // Update local state
-                const courseIndex = userData.courses.findIndex(c => c.id === courseId);
-                if (courseIndex !== -1) {
-                    if (!userData.courses[courseIndex].resources) {
-                        userData.courses[courseIndex].resources = [];
-                    }
-                    userData.courses[courseIndex].resources.push(newResource);
-
-                    // Update Firestore
-                    await updateDoc(doc(db, 'users', currentUser.uid), {
-                        courses: userData.courses
-                    });
-
-                    // Update UI
-                    renderView();
-                    alert('Recurso subido correctamente');
+            const courseIndex = userData.courses.findIndex(c => c.id === courseId);
+            if (courseIndex !== -1) {
+                if (!userData.courses[courseIndex].resources) {
+                    userData.courses[courseIndex].resources = [];
                 }
-            } catch (error) {
-                console.error("Error uploading resource:", error);
-                alert('Error al subir el recurso: ' + error.message);
-                if (btn) btn.innerHTML = originalBtnContent || 'Subir Recurso';
+                userData.courses[courseIndex].resources.push(newResource);
+
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    courses: userData.courses
+                });
+
+                renderView();
+                alert('Recurso subido correctamente');
             }
-        });
-    }
+        } catch (error) {
+            console.error("Error uploading resource:", error);
+            alert('Error al subir el recurso: ' + error.message);
+            if (btn) btn.innerHTML = originalBtnContent || 'Subir Recurso';
+        }
+    });
 }
 
-// Call init immediately to ensure it's ready
-initGlobalFileUpload();
+// Call setup when DOM is ready
+document.addEventListener('DOMContentLoaded', setupFileUploadListener);
 
 window.uploadResource = (courseId) => {
     pendingUploadCourseId = courseId;
-    const input = document.getElementById('global-file-input');
+    const input = document.getElementById('resourceFileInput');
     if (input) {
         input.click();
     } else {
-        // Fallback if init failed
-        initGlobalFileUpload();
-        document.getElementById('global-file-input').click();
+        alert('Error: No se encontró el input de archivo. Recarga la página.');
     }
 };
 

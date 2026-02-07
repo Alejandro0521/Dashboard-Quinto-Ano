@@ -96,60 +96,160 @@ window.disconnectGoogleDrive = async function () {
     }
 };
 
-// Listar carpetas del usuario
-window.listDriveFolders = async function () {
-    if (!googleDriveState.isConnected) {
-        console.warn('Google Drive no está conectado');
+// Listar items (carpetas y archivos) de un directorio
+window.listDriveItems = async function (folderId = 'root') {
+    if (!googleDriveState.isConnected) return [];
+
+    try {
+        const query = `'${folderId}' in parents and (mimeType='application/vnd.google-apps.folder' or mimeType='application/pdf') and trashed=false`;
+        const response = await gapi.client.drive.files.list({
+            q: query,
+            fields: 'files(id, name, mimeType, iconLink)',
+            orderBy: 'folder, name'
+        });
+        return response.result.files || [];
+    } catch (error) {
+        console.error('Error listando items:', error);
         return [];
+    }
+};
+
+// Navegación del picker
+let currentPickerFolderId = 'root';
+let currentPickerPath = [{ id: 'root', name: 'Inicio' }];
+
+// Mostrar selector de Drive (archivos y carpetas)
+window.showDrivePicker = async function (courseId, folderId = 'root') {
+    currentPickerFolderId = folderId;
+
+    // Si volvemos a root, reiniciar path
+    if (folderId === 'root') {
+        currentPickerPath = [{ id: 'root', name: 'Inicio' }];
     }
 
     try {
-        const response = await gapi.client.drive.files.list({
-            q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
-            fields: 'files(id, name)',
-            orderBy: 'name'
-        });
+        const items = await listDriveItems(folderId);
 
-        return response.result.files || [];
+        // Crear o actualizar modal
+        let modal = document.getElementById('drive-picker-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'drive-picker-modal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Renderizar contenido del modal
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 1rem; padding: 1.5rem; max-width: 500px; width: 95%; max-height: 85vh; display: flex; flex-direction: column;">
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="margin: 0 0 0.5rem 0;">Selecciona tu Cuaderno o Carpeta</h3>
+                    <div style="display: flex; gap: 0.5rem; color: #737373; font-size: 0.875rem; align-items: center; overflow-x: auto; white-space: nowrap; padding-bottom: 0.5rem;">
+                        ${currentPickerPath.map((p, i) => `
+                            <span style="cursor: pointer; color: ${i === currentPickerPath.length - 1 ? '#171717' : '#3b82f6'}; font-weight: ${i === currentPickerPath.length - 1 ? '600' : '400'}" 
+                                  onclick="navigateToFolder(${courseId}, '${p.id}', ${i})">
+                                ${p.name}
+                            </span>
+                            ${i < currentPickerPath.length - 1 ? '<span>/</span>' : ''}
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div style="flex: 1; overflow-y: auto; border: 1px solid #e5e5e5; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    ${items.length === 0 ? `
+                        <div style="padding: 2rem; text-align: center; color: #a3a3a3;">
+                            <i data-lucide="folder-open" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+                            <p>Carpeta vacía</p>
+                        </div>
+                    ` : `
+                        <div style="display: flex; flex-direction: column;">
+                            ${items.map(item => {
+            const isFolder = item.mimeType === 'application/vnd.google-apps.folder';
+            const icon = isFolder ? 'folder' : 'file-text';
+            const color = isFolder ? '#f59e0b' : '#ef4444';
+            const action = isFolder
+                ? `enterFolder(${courseId}, '${item.id}', '${item.name.replace(/'/g, "\\'")}')`
+                : `selectItem(${courseId}, '${item.id}', '${item.name.replace(/'/g, "\\'")}', 'file')`;
+
+            return `
+                                    <div onclick="${action}" 
+                                        style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                        <i data-lucide="${icon}" style="width: 20px; height: 20px; color: ${color}; flex-shrink: 0;"></i>
+                                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}</span>
+                                        ${isFolder ? `<i data-lucide="chevron-right" style="width: 16px; height: 16px; color: #d4d4d4;"></i>` : ''}
+                                    </div>
+                                `;
+        }).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        ${currentPickerFolderId !== 'root' ? `
+                            <button onclick="selectItem(${courseId}, '${currentPickerFolderId}', '${currentPickerPath[currentPickerPath.length - 1].name}', 'folder')" 
+                                    style="padding: 0.5rem 1rem; background: #e5e5e5; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.875rem;">
+                                Seleccionar esta carpeta
+                            </button>
+                        ` : ''}
+                    </div>
+                    <button onclick="closeDrivePicker()" style="padding: 0.5rem 1rem; background: #171717; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        lucide.createIcons();
     } catch (error) {
-        console.error('Error listando carpetas:', error);
-        return [];
+        console.error('Error opening picker:', error);
+        alert('Error al cargar elementos de Drive.');
     }
 };
 
-// Listar archivos PDF de una carpeta
-window.listDriveFiles = async function (folderId) {
-    if (!googleDriveState.isConnected) {
-        console.warn('Google Drive no está conectado');
-        return [];
-    }
+window.enterFolder = function (courseId, folderId, folderName) {
+    currentPickerPath.push({ id: folderId, name: folderName });
+    showDrivePicker(courseId, folderId);
+};
 
-    try {
-        const response = await gapi.client.drive.files.list({
-            q: `'${folderId}' in parents and (mimeType='application/pdf' or mimeType contains 'image/') and trashed=false`,
-            fields: 'files(id, name, mimeType, modifiedTime, webViewLink, thumbnailLink)',
-            orderBy: 'modifiedTime desc'
-        });
+window.navigateToFolder = function (courseId, folderId, index) {
+    currentPickerPath = currentPickerPath.slice(0, index + 1);
+    showDrivePicker(courseId, folderId);
+};
 
-        return response.result.files || [];
-    } catch (error) {
-        console.error('Error listando archivos:', error);
-        return [];
+window.closeDrivePicker = function () {
+    const modal = document.getElementById('drive-picker-modal');
+    if (modal) modal.remove();
+    currentPickerPath = [{ id: 'root', name: 'Inicio' }];
+};
+
+window.selectItem = async function (courseId, itemId, itemName, type) {
+    // type: 'file' or 'folder'
+    await saveCourseFolder(courseId, itemId, itemName, type);
+    closeDrivePicker();
+    if (typeof window.renderView === 'function') window.renderView();
+    if (type === 'file') {
+        // Force reload to show file preview
+        setTimeout(() => window.renderView(), 100);
+    } else {
+        setTimeout(() => loadCourseNotes(courseId), 100);
     }
 };
 
-// Obtener link de preview de un archivo
-window.getDriveFilePreview = function (fileId) {
-    return `https://drive.google.com/file/d/${fileId}/preview`;
-};
+// MODIFIED: saveCourseFolder to include item type
+window.saveCourseFolder = async function (courseId, folderId, folderName, type = 'folder') {
+    googleDriveState.foldersByCourrse[courseId] = {
+        id: folderId,
+        name: folderName,
+        type: type // 'folder' or 'file'
+    };
 
-// Guardar configuración de carpeta para una materia
-window.saveCourseFolder = async function (courseId, folderId, folderName) {
-    googleDriveState.foldersByCourrse[courseId] = { folderId, folderName };
-
-    // Guardar en Firebase
     if (typeof saveUserCourseFolder === 'function') {
-        await saveUserCourseFolder(courseId, folderId, folderName);
+        await saveUserCourseFolder(courseId, folderId, folderName, type);
     }
 };
 
@@ -212,7 +312,7 @@ window.renderNotesSection = function (courseId) {
                 <p style="color: #737373; margin: 0 0 1.5rem 0; font-size: 0.875rem;">
                     Conectado como: ${getDriveUserEmail()}
                 </p>
-                <button onclick="showFolderPicker(${courseId})" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <button onclick="showDrivePicker(${courseId})" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="folder-open" style="width: 16px; height: 16px;"></i>
                     Seleccionar carpeta
                 </button>
@@ -225,11 +325,11 @@ window.renderNotesSection = function (courseId) {
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <div>
-                    <span style="color: #737373; font-size: 0.875rem;">Carpeta:</span>
-                    <span style="font-weight: 500;">${courseFolder.folderName}</span>
+                    <span style="color: #737373; font-size: 0.875rem;">${courseFolder.type === 'folder' ? 'Carpeta:' : 'Archivo:'}</span>
+                    <span style="font-weight: 500;">${courseFolder.name}</span>
                 </div>
-                <button onclick="showFolderPicker(${courseId})" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.875rem;">
-                    Cambiar carpeta
+                <button onclick="showDrivePicker(${courseId})" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.875rem;">
+                    Cambiar ${courseFolder.type === 'folder' ? 'carpeta' : 'archivo'}
                 </button>
             </div>
             <div id="notes-files-${courseId}" style="display: grid; gap: 1rem;">
@@ -250,7 +350,30 @@ window.loadCourseNotes = async function (courseId) {
     const container = document.getElementById(`notes-files-${courseId}`);
     if (!container) return;
 
-    const files = await listDriveFiles(courseFolder.folderId);
+    let files = [];
+    if (courseFolder.type === 'file') {
+        // If a single file was selected, display it directly
+        try {
+            const response = await gapi.client.drive.files.get({
+                fileId: courseFolder.id,
+                fields: 'id, name, mimeType, modifiedTime, webViewLink, thumbnailLink'
+            });
+            files = [response.result];
+        } catch (error) {
+            console.error('Error fetching single file:', error);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                    <i data-lucide="alert-triangle" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
+                    <p>Error al cargar el archivo seleccionado.</p>
+                </div>
+            `;
+            lucide.createIcons();
+            return;
+        }
+    } else {
+        // If a folder was selected, list its contents
+        files = await listDriveFiles(courseFolder.id);
+    }
 
     if (files.length === 0) {
         container.innerHTML = `
@@ -259,6 +382,7 @@ window.loadCourseNotes = async function (courseId) {
                 <p>No hay apuntes en esta carpeta</p>
             </div>
         `;
+        lucide.createIcons();
         return;
     }
 
@@ -280,15 +404,44 @@ window.loadCourseNotes = async function (courseId) {
     lucide.createIcons();
 };
 
+// Listar archivos PDF de una carpeta (kept for compatibility with loadCourseNotes)
+window.listDriveFiles = async function (folderId) {
+    if (!googleDriveState.isConnected) {
+        console.warn('Google Drive no está conectado');
+        return [];
+    }
+
+    try {
+        const response = await gapi.client.drive.files.list({
+            q: `'${folderId}' in parents and (mimeType='application/pdf' or mimeType contains 'image/') and trashed=false`,
+            fields: 'files(id, name, mimeType, modifiedTime, webViewLink, thumbnailLink)',
+            orderBy: 'modifiedTime desc'
+        });
+
+        return response.result.files || [];
+    } catch (error) {
+        console.error('Error listando archivos:', error);
+        return [];
+    }
+};
+
+// Obtener link de preview de un archivo
+window.getDriveFilePreview = function (fileId) {
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+};
+
+// Aliases for compatibility
+window.showFolderPicker = (courseId) => showDrivePicker(courseId, 'root');
+window.selectFolder = (courseId, id, name) => selectItem(courseId, id, name, 'folder');
+window.closeFolderPicker = window.closeDrivePicker;
+
 // Conectar y refrescar la vista
 window.connectAndRefresh = async function () {
     try {
-        // Verificar si gapi está cargado
         if (typeof gapi === 'undefined' || !gapi.auth2) {
             alert('Cargando Google Drive... Por favor espera unos segundos e intenta de nuevo.');
             return;
         }
-
         const success = await connectGoogleDrive();
         if (success && typeof window.renderView === 'function') {
             window.renderView();
@@ -296,81 +449,6 @@ window.connectAndRefresh = async function () {
     } catch (error) {
         console.error('Error conectando:', error);
         alert('Error al conectar con Google Drive. Intenta de nuevo.');
-    }
-};
-
-// Mostrar selector de carpetas
-window.showFolderPicker = async function (courseId) {
-    try {
-        const folders = await listDriveFolders();
-
-        if (folders.length === 0) {
-            alert('No se encontraron carpetas en tu Google Drive.');
-            return;
-        }
-
-        // Crear modal para seleccionar carpeta
-        const modal = document.createElement('div');
-        modal.id = 'folder-picker-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        `;
-
-        modal.innerHTML = `
-            <div style="background: white; border-radius: 1rem; padding: 2rem; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                <h3 style="margin: 0 0 1rem 0;">Selecciona una carpeta</h3>
-                <p style="color: #737373; font-size: 0.875rem; margin-bottom: 1.5rem;">
-                    Elige la carpeta donde guardas los apuntes de esta materia
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
-                    ${folders.map(folder => `
-                        <button onclick="selectFolder(${courseId}, '${folder.id}', '${folder.name.replace(/'/g, "\\'")}')" 
-                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #fafafa; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; text-align: left; transition: all 0.2s;"
-                            onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fafafa'">
-                            <i data-lucide="folder" style="width: 20px; height: 20px; color: #f59e0b; flex-shrink: 0;"></i>
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${folder.name}</span>
-                        </button>
-                    `).join('')}
-                </div>
-                <button onclick="closeFolderPicker()" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #737373; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
-                    Cancelar
-                </button>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        lucide.createIcons();
-    } catch (error) {
-        console.error('Error mostrando carpetas:', error);
-        alert('Error al cargar las carpetas.');
-    }
-};
-
-// Seleccionar una carpeta
-window.selectFolder = async function (courseId, folderId, folderName) {
-    await saveCourseFolder(courseId, folderId, folderName);
-    closeFolderPicker();
-    if (typeof window.renderView === 'function') {
-        window.renderView();
-    }
-    // Cargar los archivos de la carpeta
-    setTimeout(() => loadCourseNotes(courseId), 100);
-};
-
-// Cerrar el modal de carpetas
-window.closeFolderPicker = function () {
-    const modal = document.getElementById('folder-picker-modal');
-    if (modal) {
-        modal.remove();
     }
 };
 

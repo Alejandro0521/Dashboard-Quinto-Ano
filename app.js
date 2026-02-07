@@ -284,7 +284,7 @@ window.saveUserDriveConfig = async (driveState) => {
     }
 };
 
-window.saveUserCourseFolder = async (courseId, folderId, folderName) => {
+window.saveUserCourseFolder = async (courseId, folderId, folderName, type = 'folder') => {
     if (!currentUser) return;
 
     try {
@@ -297,7 +297,7 @@ window.saveUserCourseFolder = async (courseId, folderId, folderName) => {
                 googleDriveData.foldersByCourrse = {};
             }
 
-            googleDriveData.foldersByCourrse[courseId] = { folderId, folderName };
+            googleDriveData.foldersByCourrse[courseId] = { folderId, folderName, type };
 
             await updateDoc(userDocRef, {
                 googleDrive: googleDriveData

@@ -161,7 +161,7 @@ function renderLivestockPrices() {
 // Función para cargar precios del backend
 window.loadLivestockPrices = async () => {
     livestockPricesState.loading = true;
-    renderView();
+    window.renderView?.();
 
     try {
         // Primero intentar cargar del JSON en GitHub Pages (actualizado automáticamente)
@@ -240,11 +240,11 @@ window.loadLivestockPrices = async () => {
         livestockPricesState.lastUpdate = data.timestamp;
         livestockPricesState.loading = false;
 
-        renderView();
+        window.renderView?.();
 
     } catch (error) {
         console.error('Error cargando precios:', error);
         livestockPricesState.loading = false;
-        renderView();
+        window.renderView?.();
     }
 };

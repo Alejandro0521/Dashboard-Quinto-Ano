@@ -298,7 +298,7 @@ window.renderNotesSection = function (courseId) {
                 <p style="color: #737373; margin: 0 0 1.5rem 0; font-size: 0.875rem;">
                     Sincroniza tus apuntes de GoodNotes automáticamente
                 </p>
-                <button onclick="connectAndRefresh()" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <button onclick="connectAndRefresh(${courseId})" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="link" style="width: 16px; height: 16px;"></i>
                     Conectar Google Drive
                 </button>
@@ -442,15 +442,22 @@ window.selectFolder = (courseId, id, name) => selectItem(courseId, id, name, 'fo
 window.closeFolderPicker = window.closeDrivePicker;
 
 // Conectar y refrescar la vista
-window.connectAndRefresh = async function () {
+// Conectar y refrescar la vista
+window.connectAndRefresh = async function (courseId) {
     try {
         if (typeof gapi === 'undefined' || !gapi.auth2) {
             alert('Cargando Google Drive... Por favor espera unos segundos e intenta de nuevo.');
             return;
         }
         const success = await connectGoogleDrive();
-        if (success && typeof window.renderView === 'function') {
-            window.renderView();
+        if (success) {
+            if (typeof window.renderView === 'function') {
+                window.renderView();
+            }
+            // If courseId is provided, open the picker automatically
+            if (courseId) {
+                setTimeout(() => showDrivePicker(courseId), 500);
+            }
         }
     } catch (error) {
         console.error('Error conectando:', error);

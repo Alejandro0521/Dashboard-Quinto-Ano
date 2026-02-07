@@ -431,6 +431,9 @@ function renderView() {
     lucide.createIcons();
 }
 
+// Exponer renderView globalmente para livestock_dashboard.js
+window.renderView = renderView;
+
 function renderDashboard() {
     const pendingTasks = userData.courses.flatMap(c =>
         c.tasks.filter(t => t.status !== 'done').map(t => ({ ...t, courseName: c.name, courseIcon: c.icon }))

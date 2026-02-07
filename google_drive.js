@@ -97,19 +97,31 @@ window.disconnectGoogleDrive = async function () {
 };
 
 // Listar items (carpetas y archivos) de un directorio
+// Listar items (carpetas y archivos) de un directorio
 window.listDriveItems = async function (folderId = 'root') {
     if (!googleDriveState.isConnected) return [];
 
     try {
-        const query = `'${folderId}' in parents and (mimeType='application/vnd.google-apps.folder' or mimeType='application/pdf') and trashed=false`;
+        // Asegurar que la API de Drive esté cargada
+        if (!gapi.client.drive) {
+            console.log('Cargando API de Drive dinámicamente...');
+            await gapi.client.load('drive', 'v3');
+        }
+
+        const query = `'${folderId}' in parents and trashed=false`;
+        // Eliminé temporalmente el filtro estricto de mimeType para depurar y mostrar todo
+        // (luego filtraremos visualmente si es necesario, o volveremos a ponerlo)
+
         const response = await gapi.client.drive.files.list({
             q: query,
             fields: 'files(id, name, mimeType, iconLink)',
-            orderBy: 'folder, name'
+            orderBy: 'folder, name',
+            pageSize: 100 // Límite para evitar cargas lentas
         });
         return response.result.files || [];
     } catch (error) {
         console.error('Error listando items:', error);
+        alert('Error técnico al listar archivos de Drive: ' + (error.result?.error?.message || error.message));
         return [];
     }
 };
@@ -120,6 +132,20 @@ let currentPickerPath = [{ id: 'root', name: 'Inicio' }];
 
 // Mostrar selector de Drive (archivos y carpetas)
 window.showDrivePicker = async function (courseId, folderId = 'root') {
+    // START LOADING INDICATOR
+    let loading = document.getElementById('drive-loader');
+    if (!loading) {
+        loading = document.createElement('div');
+        loading.id = 'drive-loader';
+        loading.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#171717;">
+            <i data-lucide="loader" style="width:48px;height:48px;animation:spin 1s linear infinite;color:#3b82f6;"></i>
+            <p style="margin-top:1rem;font-weight:500;">Cargando archivos de Drive...</p>
+        </div>`;
+        document.body.appendChild(loading);
+        lucide.createIcons();
+    }
+    loading.style.display = 'block';
+
     currentPickerFolderId = folderId;
 
     // Si volvemos a root, reiniciar path
@@ -130,6 +156,9 @@ window.showDrivePicker = async function (courseId, folderId = 'root') {
     try {
         const items = await listDriveItems(folderId);
 
+        // Hide loading
+        loading.style.display = 'none';
+
         // Crear o actualizar modal
         let modal = document.getElementById('drive-picker-modal');
         if (!modal) {
@@ -137,7 +166,7 @@ window.showDrivePicker = async function (courseId, folderId = 'root') {
             modal.id = 'drive-picker-modal';
             modal.style.cssText = `
                 position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;
             `;
             document.body.appendChild(modal);
         }
@@ -206,8 +235,12 @@ window.showDrivePicker = async function (courseId, folderId = 'root') {
 
         lucide.createIcons();
     } catch (error) {
+        // Hide loading
+        let loading = document.getElementById('drive-loader');
+        if (loading) loading.style.display = 'none';
+
         console.error('Error opening picker:', error);
-        alert('Error al cargar elementos de Drive.');
+        alert('Error al cargar elementos de Drive. Intenta de nuevo.');
     }
 };
 

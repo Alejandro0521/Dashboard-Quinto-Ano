@@ -1,127 +1,221 @@
-// Google Drive Integration for Course Notes
+// Google Drive Integration for Course Notes (GIS Migration)
 // Este módulo maneja la conexión con Google Drive para mostrar apuntes
 
 // Configuración de Google API
 const GOOGLE_CLIENT_ID = '595886544015-6tvpb2ns16kr81leek5g6bpgu6t5libp.apps.googleusercontent.com';
-const GOOGLE_API_KEY = ''; // No necesario para OAuth client-side
+const GOOGLE_API_KEY = ''; // No necesario para OAuth client-side en este flujo, pero si se usa Discovery Docs puede ser útil tenerla si hay cuotas
 const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
+const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
 // Estado de la conexión de Drive
 let googleDriveState = {
     isConnected: false,
     accessToken: null,
     userEmail: null,
-    foldersByCourrse: {} // {courseId: {folderId, folderName}}
+    foldersByCourrse: {}, // {courseId: {folderId, folderName, type}}
+    tokenClient: null,
 };
 
-// Inicializar Google API
+// Inicializar Google API (GAPI para requests, GIS para auth)
 function initGoogleDrive() {
     if (!GOOGLE_CLIENT_ID) {
         console.warn('Google Drive: No se ha configurado CLIENT_ID');
         return;
     }
 
-    // Cargar la librería de Google API
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
-    script.onload = () => {
-        gapi.load('client:auth2', initGoogleClient);
+    // 1. Cargar GAPI (para requests a Drive API)
+    const gapiScript = document.createElement('script');
+    gapiScript.src = 'https://apis.google.com/js/api.js';
+    gapiScript.onload = () => {
+        gapi.load('client', initGapiClient);
     };
-    document.head.appendChild(script);
+    document.head.appendChild(gapiScript);
+
+    // 2. GIS (Google Identity Services) ya se carga en index.html, pero esperamos a que esté listo
+    // para inicializar el Token Client.
+    if (window.google && window.google.accounts) {
+        initTokenClient();
+    } else {
+        // Polling si aún no cargó
+        const checkGIS = setInterval(() => {
+            if (window.google && window.google.accounts) {
+                clearInterval(checkGIS);
+                initTokenClient();
+            }
+        }, 100);
+    }
 }
 
-// Inicializar cliente de Google
-async function initGoogleClient() {
+// Inicializar cliente GAPI (solo discovery, sin auth2)
+async function initGapiClient() {
     try {
         await gapi.client.init({
             apiKey: GOOGLE_API_KEY,
-            clientId: GOOGLE_CLIENT_ID,
-            scope: SCOPES,
-            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+            discoveryDocs: [DISCOVERY_DOC],
         });
 
-        // Verificar si ya hay sesión
-        const authInstance = gapi.auth2.getAuthInstance();
-        if (authInstance.isSignedIn.get()) {
+        // Check local storage for existing token to restore session state visually
+        const savedToken = localStorage.getItem('gdrive_token');
+        const savedEmail = localStorage.getItem('gdrive_email');
+        if (savedToken && savedEmail) {
+            // Validate token simplified (o simplemente asumimos y si falla pedimos re-auth)
+            gapi.client.setToken({ access_token: savedToken });
             googleDriveState.isConnected = true;
-            googleDriveState.accessToken = authInstance.currentUser.get().getAuthResponse().access_token;
-            googleDriveState.userEmail = authInstance.currentUser.get().getBasicProfile().getEmail();
+            googleDriveState.accessToken = savedToken;
+            googleDriveState.userEmail = savedEmail;
         }
+
     } catch (error) {
-        console.error('Error inicializando Google Drive:', error);
+        console.error('Error inicializando GAPI Client:', error);
     }
 }
 
-// Conectar con Google Drive (OAuth)
-window.connectGoogleDrive = async function () {
-    if (!GOOGLE_CLIENT_ID) {
-        alert('Google Drive no está configurado todavía. Contacta al administrador.');
-        return false;
-    }
-
+// Inicializar Token Client de GIS
+function initTokenClient() {
     try {
-        const authInstance = gapi.auth2.getAuthInstance();
-        await authInstance.signIn();
+        googleDriveState.tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: SCOPES,
+            callback: (tokenResponse) => {
+                if (tokenResponse && tokenResponse.access_token) {
+                    // Auth exitoso
+                    googleDriveState.isConnected = true;
+                    googleDriveState.accessToken = tokenResponse.access_token;
 
-        googleDriveState.isConnected = true;
-        googleDriveState.accessToken = authInstance.currentUser.get().getAuthResponse().access_token;
-        googleDriveState.userEmail = authInstance.currentUser.get().getBasicProfile().getEmail();
+                    // Guardar token temporalmente (GIS tokens duran 1h)
+                    localStorage.setItem('gdrive_token', tokenResponse.access_token);
 
-        // Guardar en Firebase para el usuario actual
-        if (typeof saveUserDriveConfig === 'function') {
-            await saveUserDriveConfig(googleDriveState);
+                    // Configurar token en gapi
+                    if (gapi.client) gapi.client.setToken(tokenResponse);
+
+                    // Obtener info del usuario (opcional, para mostrar email)
+                    fetchUserEmail(tokenResponse.access_token);
+                }
+            },
+        });
+    } catch (error) {
+        console.error('Error inicializando GIS Token Client:', error);
+    }
+}
+
+// Obtener email del usuario usando info endpoint
+async function fetchUserEmail(accessToken) {
+    try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const data = await response.json();
+        if (data.email) {
+            googleDriveState.userEmail = data.email;
+            localStorage.setItem('gdrive_email', data.email);
+
+            // Guardar config en Firebase si es necesario
+            if (typeof saveUserDriveConfig === 'function') {
+                saveUserDriveConfig({
+                    isConnected: true,
+                    userEmail: data.email,
+                    accessToken: accessToken // Not recommended to persist access token permanently in DB, but ok for session checks
+                });
+            }
+
+            // Refrescar vista si hay callbacks pendientes
+            if (typeof window.renderView === 'function') window.renderView();
+
+            // Si hay un proceso de conexión pendiente que esperaba esto
+            const loading = document.getElementById('drive-loader');
+            if (loading) loading.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+    }
+}
+
+// Conectar con Google Drive (Trigger flow)
+window.connectGoogleDrive = function () {
+    return new Promise((resolve, reject) => {
+        if (!googleDriveState.tokenClient) {
+            alert('El servicio de Google no está listo. Recarga la página.');
+            return resolve(false);
         }
 
-        return true;
-    } catch (error) {
-        console.error('Error conectando con Google Drive:', error);
-        return false;
-    }
+        // Mostrar loading
+        let loading = document.getElementById('drive-loader');
+        if (!loading) { // Create simplistic loader if not exists
+            loading = document.createElement('div');
+            loading.id = 'drive-loader';
+            loading.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#171717;">
+                <p>Conectando con Google...</p>
+             </div>`;
+            document.body.appendChild(loading);
+        }
+        loading.style.display = 'flex';
+
+        // Override callback for this specific request to resolve promise
+        googleDriveState.tokenClient.callback = async (resp) => {
+            if (resp.error) {
+                loading.style.display = 'none';
+                console.error('Error OAuth:', resp);
+                resolve(false);
+                return;
+            }
+
+            // Success
+            googleDriveState.isConnected = true;
+            googleDriveState.accessToken = resp.access_token;
+            localStorage.setItem('gdrive_token', resp.access_token);
+            if (gapi.client) gapi.client.setToken(resp);
+
+            await fetchUserEmail(resp.access_token);
+
+            loading.style.display = 'none';
+            resolve(true);
+        };
+
+        // Request token
+        if (gapi.client.getToken() === null) {
+            googleDriveState.tokenClient.requestAccessToken({ prompt: 'consent' });
+        } else {
+            googleDriveState.tokenClient.requestAccessToken({ prompt: '' });
+        }
+    });
 };
 
 // Desconectar Google Drive
 window.disconnectGoogleDrive = async function () {
-    try {
-        const authInstance = gapi.auth2.getAuthInstance();
-        await authInstance.signOut();
-
-        googleDriveState.isConnected = false;
-        googleDriveState.accessToken = null;
-        googleDriveState.userEmail = null;
-
-        return true;
-    } catch (error) {
-        console.error('Error desconectando Google Drive:', error);
-        return false;
+    const token = gapi.client.getToken();
+    if (token) {
+        google.accounts.oauth2.revoke(token.access_token, () => { console.log('Token revoked') });
+        gapi.client.setToken(null);
+        localStorage.removeItem('gdrive_token');
+        localStorage.removeItem('gdrive_email');
     }
+    googleDriveState.isConnected = false;
+    googleDriveState.accessToken = null;
+    googleDriveState.userEmail = null;
+    return true;
 };
 
-// Listar items (carpetas y archivos) de un directorio
 // Listar items (carpetas y archivos) de un directorio
 window.listDriveItems = async function (folderId = 'root') {
     if (!googleDriveState.isConnected) return [];
 
     try {
-        // Asegurar que la API de Drive esté cargada
-        if (!gapi.client.drive) {
-            console.log('Cargando API de Drive dinámicamente...');
-            await gapi.client.load('drive', 'v3');
-        }
-
         const query = `'${folderId}' in parents and trashed=false`;
-        // Eliminé temporalmente el filtro estricto de mimeType para depurar y mostrar todo
-        // (luego filtraremos visualmente si es necesario, o volveremos a ponerlo)
-
         const response = await gapi.client.drive.files.list({
             q: query,
             fields: 'files(id, name, mimeType, iconLink)',
             orderBy: 'folder, name',
-            pageSize: 100 // Límite para evitar cargas lentas
+            pageSize: 100
         });
         return response.result.files || [];
     } catch (error) {
         console.error('Error listando items:', error);
-        alert('Error técnico al listar archivos de Drive: ' + (error.result?.error?.message || error.message));
+        // Si el error es de auth (401), intentar refrescar token silenciosamente
+        if (error.status === 401) {
+            // Prompt re-auth (interactive needed usually or handled by GIS logic)
+            console.log('Token expired, user needs to re-connect manually for now.');
+        }
+        alert('Error técnico al listar archivos (posiblemente sesión expirada): ' + (error.result?.error?.message || error.message));
         return [];
     }
 };
@@ -289,35 +383,17 @@ window.saveCourseFolder = async function (courseId, folderId, folderName, type =
     }
 };
 
-// Obtener carpeta configurada para una materia
-window.getCourseFolder = function (courseId) {
-    return googleDriveState.foldersByCourrse[courseId] || null;
-};
-
-// Verificar si Drive está conectado
-window.isDriveConnected = function () {
-    return googleDriveState.isConnected;
-};
-
-// Obtener email del usuario de Drive
-window.getDriveUserEmail = function () {
-    return googleDriveState.userEmail;
-};
-
 // Renderizar sección de apuntes para una materia
 window.renderNotesSection = function (courseId) {
     const isConnected = isDriveConnected();
     const courseFolder = getCourseFolder(courseId);
 
     if (!GOOGLE_CLIENT_ID) {
-        // Google Drive no configurado - mostrar mensaje
+        // Google Drive no configurado
         return `
             <div style="text-align: center; padding: 3rem; color: #737373;">
                 <i data-lucide="cloud-off" style="width: 48px; height: 48px; margin-bottom: 1rem;"></i>
                 <h3 style="margin: 0 0 0.5rem 0; color: #525252;">Google Drive no configurado</h3>
-                <p style="margin: 0; font-size: 0.875rem;">
-                    La integración con Google Drive estará disponible próximamente.
-                </p>
             </div>
         `;
     }
@@ -329,7 +405,7 @@ window.renderNotesSection = function (courseId) {
                 <i data-lucide="cloud" style="width: 48px; height: 48px; color: #3b82f6; margin-bottom: 1rem;"></i>
                 <h3 style="margin: 0 0 0.5rem 0;">Conecta tu Google Drive</h3>
                 <p style="color: #737373; margin: 0 0 1.5rem 0; font-size: 0.875rem;">
-                    Sincroniza tus apuntes de GoodNotes automáticamente
+                    Sincroniza tus apuntes de GoodNotes automáticamente (Nuevo Login)
                 </p>
                 <button onclick="connectAndRefresh(${courseId})" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="link" style="width: 16px; height: 16px;"></i>
@@ -356,7 +432,7 @@ window.renderNotesSection = function (courseId) {
         `;
     }
 
-    // Mostrar archivos de la carpeta
+    // Mostrar archivos
     return `
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -389,6 +465,16 @@ window.loadCourseNotes = async function (courseId) {
     let files = [];
     // Ensure we use the correct property for ID (local state might have id, Firestore has folderId)
     const targetId = courseFolder.folderId || courseFolder.id;
+
+    // Si no tenemos token, intentar restaurarlo de localStorage o pedirlo
+    if (!gapi.client.getToken()) {
+        const token = localStorage.getItem('gdrive_token');
+        if (token) gapi.client.setToken({ access_token: token });
+        else {
+            container.innerHTML = `<p style="color:red">Sesión expirada. Por favor reconecta Drive.</p>`;
+            return;
+        }
+    }
 
     if (courseFolder.type === 'file') {
         // If a single file was selected, display it directly
@@ -446,8 +532,15 @@ window.loadCourseNotes = async function (courseId) {
 // Listar archivos PDF de una carpeta (kept for compatibility with loadCourseNotes)
 window.listDriveFiles = async function (folderId) {
     if (!googleDriveState.isConnected) {
-        console.warn('Google Drive no está conectado');
-        return [];
+        // Try to restore session if possible
+        const token = localStorage.getItem('gdrive_token');
+        if (token) {
+            gapi.client.setToken({ access_token: token });
+            googleDriveState.isConnected = true;
+        } else {
+            console.warn('Google Drive no está conectado');
+            return [];
+        }
     }
 
     try {
@@ -475,13 +568,8 @@ window.selectFolder = (courseId, id, name) => selectItem(courseId, id, name, 'fo
 window.closeFolderPicker = window.closeDrivePicker;
 
 // Conectar y refrescar la vista
-// Conectar y refrescar la vista
 window.connectAndRefresh = async function (courseId) {
     try {
-        if (typeof gapi === 'undefined' || !gapi.auth2) {
-            alert('Cargando Google Drive... Por favor espera unos segundos e intenta de nuevo.');
-            return;
-        }
         const success = await connectGoogleDrive();
         if (success) {
             if (typeof window.renderView === 'function') {
@@ -497,6 +585,11 @@ window.connectAndRefresh = async function (courseId) {
         alert('Error al conectar con Google Drive. Intenta de nuevo.');
     }
 };
+
+// Helpers para estado
+function isDriveConnected() { return googleDriveState.isConnected; }
+function getDriveUserEmail() { return googleDriveState.userEmail || ''; }
+function getCourseFolder(courseId) { return googleDriveState.foldersByCourrse[courseId]; }
 
 // Inicializar si hay CLIENT_ID configurado
 if (GOOGLE_CLIENT_ID) {

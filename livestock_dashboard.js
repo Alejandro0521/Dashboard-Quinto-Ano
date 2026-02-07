@@ -91,7 +91,6 @@ function renderLivestockPrices() {
                             <div style="background: white; border: 1px solid ${region.especial ? '#fbbf24' : '#e5e5e5'}; border-radius: 1rem; overflow: hidden; ${region.especial ? 'box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);' : ''}">
                                 <div style="background: ${key === 'norte' ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)' : key === 'jalisco' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, #059669 0%, #047857 100%)'}; color: white; padding: 0.75rem 1rem;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">${region.icono || '📍'}</span>
                                         <div>
                                             <h4 style="margin: 0; font-weight: 600; font-size: 0.9rem;">${region.nombre}</h4>
                                         </div>
@@ -132,7 +131,6 @@ function renderLivestockPrices() {
                             <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; overflow: hidden;">
                                 <div style="background: ${key === 'norte' ? '#dc2626' : key === 'jalisco' ? '#f59e0b' : '#059669'}; color: white; padding: 0.75rem 1rem;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">${region.icono || '📍'}</span>
                                         <h4 style="margin: 0; font-weight: 600; font-size: 0.9rem;">${region.nombre}</h4>
                                     </div>
                                 </div>
@@ -176,7 +174,6 @@ function renderLivestockPrices() {
                             <div style="background: white; border: 1px solid #e5e5e5; border-radius: 1rem; overflow: hidden;">
                                 <div style="background: ${key === 'norte' ? '#dc2626' : key === 'jalisco' ? '#f59e0b' : '#059669'}; color: white; padding: 0.75rem 1rem;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">${region.icono || '📍'}</span>
                                         <h4 style="margin: 0; font-weight: 600; font-size: 0.9rem;">${region.nombre}</h4>
                                     </div>
                                 </div>

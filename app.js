@@ -1442,6 +1442,11 @@ window.viewCourse = (courseId) => {
     renderView();
 };
 
+window.closeTool = () => {
+    currentTool = null;
+    renderView();
+};
+
 window.toggleTask = async (courseId, taskId) => {
     const course = userData.courses.find(c => c.id === courseId);
     const task = course.tasks.find(t => t.id === taskId);

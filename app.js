@@ -90,7 +90,7 @@ const INITIAL_DATA = {
         {
             id: 7,
             name: "Práctica Profesional",
-            icon: "💼",
+            icon: "🐷",
             progress: 20,
             grade: 10.0,
             professor: "Coord. Laboral",
@@ -363,10 +363,30 @@ async function loadUserData() {
         userData.courses = userData.courses.map(userCourse => {
             const initialCourse = INITIAL_DATA.courses.find(c => c.id === userCourse.id);
             if (initialCourse) {
+                let changed = false;
+                let updatedCourse = { ...userCourse };
+
                 // Check if hasTools property needs to be added/updated
                 if (initialCourse.hasTools && !userCourse.hasTools) {
+                    updatedCourse.hasTools = true;
+                    changed = true;
+                }
+
+                // Check if resources array is missing (migration for previous feature)
+                if (initialCourse.resources && !userCourse.resources) {
+                    updatedCourse.resources = [];
+                    changed = true;
+                }
+
+                // Sync Icon if changed (e.g. pig emoji)
+                if (initialCourse.icon !== userCourse.icon) {
+                    updatedCourse.icon = initialCourse.icon;
+                    changed = true;
+                }
+
+                if (changed) {
                     needsUpdate = true;
-                    return { ...userCourse, hasTools: true };
+                    return updatedCourse;
                 }
             }
             return userCourse;

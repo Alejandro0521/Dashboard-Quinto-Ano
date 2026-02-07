@@ -229,6 +229,7 @@ window.closeDrivePicker = function () {
 
 window.selectItem = async function (courseId, itemId, itemName, type) {
     // type: 'file' or 'folder'
+    // itemId is effectively folderId in our data structure context
     await saveCourseFolder(courseId, itemId, itemName, type);
     closeDrivePicker();
     if (typeof window.renderView === 'function') window.renderView();
@@ -240,13 +241,15 @@ window.selectItem = async function (courseId, itemId, itemName, type) {
     }
 };
 
-// MODIFIED: saveCourseFolder to include item type
+// MODIFIED: saveCourseFolder to include item type and use consistent keys
 window.saveCourseFolder = async function (courseId, folderId, folderName, type = 'folder') {
     googleDriveState.foldersByCourrse[courseId] = {
-        id: folderId,
-        name: folderName,
+        folderId: folderId,      // Uniform key
+        folderName: folderName,  // Uniform key
         type: type // 'folder' or 'file'
     };
+
+    // Update simple cache if needed or just rely on state
 
     if (typeof saveUserCourseFolder === 'function') {
         await saveUserCourseFolder(courseId, folderId, folderName, type);
@@ -325,11 +328,11 @@ window.renderNotesSection = function (courseId) {
         <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                 <div>
-                    <span style="color: #737373; font-size: 0.875rem;">${courseFolder.type === 'folder' ? 'Carpeta:' : 'Archivo:'}</span>
-                    <span style="font-weight: 500;">${courseFolder.name}</span>
+                    <span style="color: #737373; font-size: 0.875rem;">${courseFolder.type === 'file' ? 'Archivo:' : 'Carpeta:'}</span>
+                    <span style="font-weight: 500;">${courseFolder.folderName || courseFolder.name}</span>
                 </div>
                 <button onclick="showDrivePicker(${courseId})" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 0.875rem;">
-                    Cambiar ${courseFolder.type === 'folder' ? 'carpeta' : 'archivo'}
+                    Cambiar ${courseFolder.type === 'file' ? 'archivo' : 'carpeta'}
                 </button>
             </div>
             <div id="notes-files-${courseId}" style="display: grid; gap: 1rem;">
@@ -351,11 +354,14 @@ window.loadCourseNotes = async function (courseId) {
     if (!container) return;
 
     let files = [];
+    // Ensure we use the correct property for ID (local state might have id, Firestore has folderId)
+    const targetId = courseFolder.folderId || courseFolder.id;
+
     if (courseFolder.type === 'file') {
         // If a single file was selected, display it directly
         try {
             const response = await gapi.client.drive.files.get({
-                fileId: courseFolder.id,
+                fileId: targetId,
                 fields: 'id, name, mimeType, modifiedTime, webViewLink, thumbnailLink'
             });
             files = [response.result];
@@ -372,7 +378,7 @@ window.loadCourseNotes = async function (courseId) {
         }
     } else {
         // If a folder was selected, list its contents
-        files = await listDriveFiles(courseFolder.id);
+        files = await listDriveFiles(targetId);
     }
 
     if (files.length === 0) {

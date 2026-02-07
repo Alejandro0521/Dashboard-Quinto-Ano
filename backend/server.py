@@ -5,7 +5,7 @@ Flask API Server para precios pecuarios del SNIIM
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from scraper import SNIIMScraper
+from scraper import SNIIMRegionalScraper
 import threading
 import time
 from datetime import datetime
@@ -20,7 +20,7 @@ price_cache = {
 }
 
 # Instancia del scraper
-scraper = SNIIMScraper()
+scraper = SNIIMRegionalScraper()
 
 # Lock para thread-safety
 cache_lock = threading.Lock()

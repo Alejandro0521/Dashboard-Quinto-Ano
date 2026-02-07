@@ -876,8 +876,9 @@ let setTheoryState = {
 
 // Estado del dashboard de precios pecuarios
 let livestockPricesState = {
-    livestock: {},
+    regiones: {},
     feed: {},
+    comparacion: null,
     lastUpdate: null,
     loading: false
 };

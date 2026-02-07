@@ -280,6 +280,100 @@ window.loadCourseNotes = async function (courseId) {
     lucide.createIcons();
 };
 
+// Conectar y refrescar la vista
+window.connectAndRefresh = async function () {
+    try {
+        // Verificar si gapi está cargado
+        if (typeof gapi === 'undefined' || !gapi.auth2) {
+            alert('Cargando Google Drive... Por favor espera unos segundos e intenta de nuevo.');
+            return;
+        }
+
+        const success = await connectGoogleDrive();
+        if (success && typeof window.renderView === 'function') {
+            window.renderView();
+        }
+    } catch (error) {
+        console.error('Error conectando:', error);
+        alert('Error al conectar con Google Drive. Intenta de nuevo.');
+    }
+};
+
+// Mostrar selector de carpetas
+window.showFolderPicker = async function (courseId) {
+    try {
+        const folders = await listDriveFolders();
+
+        if (folders.length === 0) {
+            alert('No se encontraron carpetas en tu Google Drive.');
+            return;
+        }
+
+        // Crear modal para seleccionar carpeta
+        const modal = document.createElement('div');
+        modal.id = 'folder-picker-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        `;
+
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 1rem; padding: 2rem; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 1rem 0;">Selecciona una carpeta</h3>
+                <p style="color: #737373; font-size: 0.875rem; margin-bottom: 1.5rem;">
+                    Elige la carpeta donde guardas los apuntes de esta materia
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 300px; overflow-y: auto;">
+                    ${folders.map(folder => `
+                        <button onclick="selectFolder(${courseId}, '${folder.id}', '${folder.name.replace(/'/g, "\\'")}')" 
+                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: #fafafa; border: 1px solid #e5e5e5; border-radius: 0.5rem; cursor: pointer; text-align: left; transition: all 0.2s;"
+                            onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#fafafa'">
+                            <i data-lucide="folder" style="width: 20px; height: 20px; color: #f59e0b; flex-shrink: 0;"></i>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${folder.name}</span>
+                        </button>
+                    `).join('')}
+                </div>
+                <button onclick="closeFolderPicker()" style="margin-top: 1rem; width: 100%; padding: 0.75rem; background: #737373; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    Cancelar
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        lucide.createIcons();
+    } catch (error) {
+        console.error('Error mostrando carpetas:', error);
+        alert('Error al cargar las carpetas.');
+    }
+};
+
+// Seleccionar una carpeta
+window.selectFolder = async function (courseId, folderId, folderName) {
+    await saveCourseFolder(courseId, folderId, folderName);
+    closeFolderPicker();
+    if (typeof window.renderView === 'function') {
+        window.renderView();
+    }
+    // Cargar los archivos de la carpeta
+    setTimeout(() => loadCourseNotes(courseId), 100);
+};
+
+// Cerrar el modal de carpetas
+window.closeFolderPicker = function () {
+    const modal = document.getElementById('folder-picker-modal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
 // Inicializar si hay CLIENT_ID configurado
 if (GOOGLE_CLIENT_ID) {
     initGoogleDrive();

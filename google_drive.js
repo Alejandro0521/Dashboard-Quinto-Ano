@@ -8,13 +8,15 @@ const SCOPES = 'https://www.googleapis.com/auth/drive.readonly';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
 // Estado de la conexión de Drive
-let googleDriveState = {
+// Estado de la conexión de Drive
+window.googleDriveState = window.googleDriveState || {
     isConnected: false,
     accessToken: null,
     userEmail: null,
-    foldersByCourrse: {}, // {courseId: {folderId, folderName, type}}
+    foldersByCourse: {}, // {courseId: {folderId, folderName, type}}
     tokenClient: null,
 };
+const googleDriveState = window.googleDriveState;
 
 // Inicializar Google API (GAPI para requests, GIS para auth)
 function initGoogleDrive() {
@@ -370,7 +372,7 @@ window.selectItem = async function (courseId, itemId, itemName, type) {
 
 // MODIFIED: saveCourseFolder to include item type and use consistent keys
 window.saveCourseFolder = async function (courseId, folderId, folderName, type = 'folder') {
-    googleDriveState.foldersByCourrse[courseId] = {
+    googleDriveState.foldersByCourse[courseId] = {
         folderId: folderId,      // Uniform key
         folderName: folderName,  // Uniform key
         type: type // 'folder' or 'file'
@@ -587,7 +589,7 @@ window.connectAndRefresh = async function (courseId) {
 // Helpers para estado
 function isDriveConnected() { return googleDriveState.isConnected; }
 function getDriveUserEmail() { return googleDriveState.userEmail || ''; }
-function getCourseFolder(courseId) { return googleDriveState.foldersByCourrse[courseId]; }
+function getCourseFolder(courseId) { return googleDriveState.foldersByCourse[courseId]; }
 
 // Inicializar si hay CLIENT_ID configurado
 if (GOOGLE_CLIENT_ID) {

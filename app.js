@@ -294,10 +294,10 @@ window.saveUserCourseFolder = async (courseId, folderId, folderName, type = 'fol
         if (userDoc.exists()) {
             let googleDriveData = userDoc.data().googleDrive || {};
             if (!googleDriveData.foldersByCourrse) {
-                googleDriveData.foldersByCourrse = {};
+                googleDriveData.foldersByCourse = {};
             }
 
-            googleDriveData.foldersByCourrse[courseId] = { folderId, folderName, type };
+            googleDriveData.foldersByCourse[courseId] = { folderId, folderName, type };
 
             await updateDoc(userDocRef, {
                 googleDrive: googleDriveData
@@ -378,16 +378,36 @@ async function loadUserData() {
         currentUserName = docData.name || (currentUser.email ? currentUser.email.split('@')[0] : 'Estudiante');
 
         // Cargar configuración de Google Drive
-        if (docData.googleDrive && window.googleDriveState) {
+        if (docData.googleDrive) {
+            // Ensure window.googleDriveState is initialized
+            if (!window.googleDriveState) {
+                window.googleDriveState = {
+                    isConnected: false,
+                    accessToken: null,
+                    userEmail: null,
+                    foldersByCourrse: {}
+                };
+            }
+
             window.googleDriveState.isConnected = docData.googleDrive.isConnected || false;
             window.googleDriveState.userEmail = docData.googleDrive.userEmail || null;
-            window.googleDriveState.accessToken = docData.googleDrive.accessToken || null;
-            window.googleDriveState.foldersByCourrse = docData.googleDrive.foldersByCourrse || {};
+            // Access token from DB is not reliable for GIS (short-lived), rely on localStorage or re-auth
+            // window.googleDriveState.accessToken = docData.googleDrive.accessToken || null; 
+            window.googleDriveState.foldersByCourse = docData.googleDrive.foldersByCourse || {};
 
-            // Si hay token, intentar restaurar sesión silenciosa
-            if (window.googleDriveState.isConnected && typeof gapi !== 'undefined' && gapi.auth2) {
-                // La librería de Google manejará esto, pero seteamos el estado visual
-                console.log('Restaurando sesión de Drive para:', window.googleDriveState.userEmail);
+            // Intentar restaurar sesión de localStorage si existe token válido
+            const localToken = localStorage.getItem('gdrive_token');
+            const localEmail = localStorage.getItem('gdrive_email');
+
+            if (localToken && localEmail) {
+                window.googleDriveState.isConnected = true;
+                window.googleDriveState.accessToken = localToken;
+                window.googleDriveState.userEmail = localEmail;
+
+                // Set token in GAPI client if available
+                if (typeof gapi !== 'undefined' && gapi.client) {
+                    gapi.client.setToken({ access_token: localToken });
+                }
             }
         }
 

@@ -173,92 +173,92 @@ function initializeEventListeners() {
     });
 }
 
-// Resource Functions
-window.uploadResource = async (courseId) => {
-    // Remove any existing temp inputs
-    const existingInput = document.getElementById('tempUploadInput');
-    if (existingInput) existingInput.remove();
+// Global variable to track which course is requesting an upload
+let pendingUploadCourseId = null;
 
-    const input = document.createElement('input');
-    input.id = 'tempUploadInput';
-    input.type = 'file';
-    input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp';
-    input.style.display = 'none';
-    document.body.appendChild(input);
+// Initialize global file input
+function initGlobalFileUpload() {
+    let input = document.getElementById('global-file-input');
+    if (!input) {
+        input = document.createElement('input');
+        input.id = 'global-file-input';
+        input.type = 'file';
+        input.accept = '.pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp';
+        input.style.display = 'none'; // Hidden but present in DOM
+        document.body.appendChild(input);
 
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) {
-            document.body.removeChild(input);
-            return;
-        }
+        input.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            // Clear the value so the same file can be selected again if needed
+            e.target.value = '';
 
-        // Show loading state (could be improved with a toast or UI indicator)
-        const btn = document.getElementById('uploadBtn');
-        if (btn) {
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Subiendo...`;
-        }
+            if (!file || !pendingUploadCourseId) return;
 
-        try {
-            // Create storage reference
-            const storagePath = `users/${currentUser.uid}/courses/${courseId}/${Date.now()}_${file.name}`;
-            const fileRef = storageRef(storage, storagePath);
+            const courseId = pendingUploadCourseId;
+            pendingUploadCourseId = null; // Reset
 
-            // Upload file
-            await uploadBytes(fileRef, file);
-            const url = await getDownloadURL(fileRef);
+            // Show loading state
+            const btn = document.getElementById('uploadBtn');
+            const originalBtnContent = btn ? btn.innerHTML : '';
+            if (btn) btn.innerHTML = `<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Subiendo...`;
 
-            // Create resource object
-            const newResource = {
-                name: file.name,
-                url: url,
-                type: file.type,
-                date: new Date().toISOString(),
-                path: storagePath
-            };
+            try {
+                // Create storage reference
+                const storagePath = `users/${currentUser.uid}/courses/${courseId}/${Date.now()}_${file.name}`;
+                const fileRef = storageRef(storage, storagePath);
 
-            // Update local state
-            const courseIndex = userData.courses.findIndex(c => c.id === courseId);
-            if (courseIndex === -1) return;
+                // Upload file
+                await uploadBytes(fileRef, file);
+                const url = await getDownloadURL(fileRef);
 
-            if (!userData.courses[courseIndex].resources) {
-                userData.courses[courseIndex].resources = [];
+                // Create resource object
+                const newResource = {
+                    name: file.name,
+                    url: url,
+                    type: file.type,
+                    date: new Date().toISOString(),
+                    path: storagePath
+                };
+
+                // Update local state
+                const courseIndex = userData.courses.findIndex(c => c.id === courseId);
+                if (courseIndex !== -1) {
+                    if (!userData.courses[courseIndex].resources) {
+                        userData.courses[courseIndex].resources = [];
+                    }
+                    userData.courses[courseIndex].resources.push(newResource);
+
+                    // Update Firestore
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        courses: userData.courses
+                    });
+
+                    // Update UI
+                    renderView();
+                    alert('Recurso subido correctamente');
+                }
+            } catch (error) {
+                console.error("Error uploading resource:", error);
+                alert('Error al subir el recurso: ' + error.message);
+                if (btn) btn.innerHTML = originalBtnContent || 'Subir Recurso';
             }
-            userData.courses[courseIndex].resources.push(newResource);
+        });
+    }
+}
 
-            // Update Firestore
-            await updateDoc(doc(db, 'users', currentUser.uid), {
-                courses: userData.courses
-            });
+// Call init immediately to ensure it's ready
+initGlobalFileUpload();
 
-            // Update UI
-            renderView();
-            alert('Recurso subido correctamente'); // Optional: replace with toast
-
-        } catch (error) {
-            console.error("Error uploading resource:", error);
-            alert('Error al subir el recurso: ' + error.message);
-            if (btn) btn.innerHTML = `<i data-lucide="upload" style="width: 16px; height: 16px;"></i> Subir Recurso`;
-        } finally {
-            document.body.removeChild(input);
-        }
-    };
-
-    // Handle cancel
-    window.addEventListener('focus', () => {
-        setTimeout(() => {
-            if (document.body.contains(input)) {
-                // If input is still there after a delay and focus return, it might be a cancel
-                // But safer to just leave it or rely on onchange.
-                // We'll just rely on the fact that if they don't pick a file, nothing happens, 
-                // but we should clean up eventually. 
-                // For now, let's just leave it to be cleaned up by next call's existingInput check
-            }
-        }, 1000);
-    }, { once: true });
-
-    input.click();
+window.uploadResource = (courseId) => {
+    pendingUploadCourseId = courseId;
+    const input = document.getElementById('global-file-input');
+    if (input) {
+        input.click();
+    } else {
+        // Fallback if init failed
+        initGlobalFileUpload();
+        document.getElementById('global-file-input').click();
+    }
 };
 
 window.deleteResource = async (courseId, resourceIndex) => {

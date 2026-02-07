@@ -212,12 +212,48 @@ window.listDriveItems = async function (folderId = 'root') {
         return response.result.files || [];
     } catch (error) {
         console.error('Error listando items:', error);
-        // Si el error es de auth (401), intentar refrescar token silenciosamente
-        if (error.status === 401) {
-            // Prompt re-auth (interactive needed usually or handled by GIS logic)
-            console.log('Token expired, user needs to re-connect manually for now.');
+
+        // Si el error es de auth (401) o "invalid credentials"
+        if (error.status === 401 || (error.result && error.result.error && error.result.error.code === 401)) {
+            console.log('Token expirado. Iniciando re-autenticación...');
+
+            // Intentar obtener nuevo token silenciosamente o con prompt si es necesario
+            return new Promise((resolve) => {
+                // Configurar callback temporal para reintentar la operación
+                const originalCallback = googleDriveState.tokenClient.callback;
+
+                googleDriveState.tokenClient.callback = async (resp) => {
+                    if (resp.error) {
+                        console.error('Error re-autenticando:', resp);
+                        resolve([]); // Falló re-auth
+                        return;
+                    }
+
+                    // Actualizar token
+                    googleDriveState.accessToken = resp.access_token;
+                    localStorage.setItem('gdrive_token', resp.access_token);
+                    if (gapi.client) gapi.client.setToken(resp);
+
+                    // Restaurar callback original (o dejar el default si no había)
+                    // googleDriveState.tokenClient.callback = originalCallback; 
+                    // Mejor reinicializarlo en initTokenClient si fuera complejo, pero aquí es simple.
+
+                    // Reintentar la operación original
+                    console.log('Re-intentando listado con nuevo token...');
+                    const retryItems = await window.listDriveItems(folderId);
+                    resolve(retryItems);
+                };
+
+                // Pedir token (esto abrirá el popup de Google si es necesario, user interactions required mostly)
+                // Usamos prompt: '' para intentar silenciar si es posible, o 'consent' si falla.
+                // Como estamos en un catch de 401, lo más probable es que necesitemos interacción.
+                // Sin embargo, para no bloquear con popups inesperados, quizás sea mejor avisar.
+                // Intentemos sin prompt primero (silent refresh si la sesión de Google sigue viva)
+                googleDriveState.tokenClient.requestAccessToken({ prompt: '' });
+            });
         }
-        alert('Error técnico al listar archivos (posiblemente sesión expirada): ' + (error.result?.error?.message || error.message));
+
+        alert('Error técnico al listar archivos: ' + (error.result?.error?.message || error.message));
         return [];
     }
 };
@@ -426,10 +462,15 @@ window.renderNotesSection = function (courseId) {
                 <p style="color: #737373; margin: 0 0 1.5rem 0; font-size: 0.875rem;">
                     Conectado como: ${getDriveUserEmail()}
                 </p>
-                <button onclick="showDrivePicker(${courseId})" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <button onclick="showDrivePicker(${courseId})" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem;">
                     <i data-lucide="folder-open" style="width: 16px; height: 16px;"></i>
                     Seleccionar carpeta
                 </button>
+                <div style="margin-top: 1rem;">
+                    <button onclick="disconnectGoogleDrive(); location.reload();" style="background: none; border: none; color: #ef4444; font-size: 0.75rem; text-decoration: underline; cursor: pointer;">
+                        Desconectar cuenta
+                    </button>
+                </div>
             </div>
         `;
     }
@@ -551,8 +592,35 @@ window.listDriveFiles = async function (folderId) {
         });
 
         return response.result.files || [];
+        return response.result.files || [];
     } catch (error) {
         console.error('Error listando archivos:', error);
+
+        // Si el error es de auth (401) o "invalid credentials"
+        if (error.status === 401 || (error.result && error.result.error && error.result.error.code === 401)) {
+            console.log('Token expirado en listDriveFiles. Iniciando re-autenticación...');
+
+            return new Promise((resolve) => {
+                googleDriveState.tokenClient.callback = async (resp) => {
+                    if (resp.error) {
+                        console.error('Error re-autenticando:', resp);
+                        resolve([]);
+                        return;
+                    }
+
+                    googleDriveState.accessToken = resp.access_token;
+                    localStorage.setItem('gdrive_token', resp.access_token);
+                    if (gapi.client) gapi.client.setToken(resp);
+
+                    console.log('Re-intentando listado de archivos con nuevo token...');
+                    const retryFiles = await window.listDriveFiles(folderId);
+                    resolve(retryFiles);
+                };
+
+                googleDriveState.tokenClient.requestAccessToken({ prompt: '' });
+            });
+        }
+
         return [];
     }
 };

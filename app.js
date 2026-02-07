@@ -293,15 +293,17 @@ window.saveUserCourseFolder = async (courseId, folderId, folderName, type = 'fol
 
         if (userDoc.exists()) {
             let googleDriveData = userDoc.data().googleDrive || {};
-            if (!googleDriveData.foldersByCourrse) {
+            if (!googleDriveData.foldersByCourse) {
                 googleDriveData.foldersByCourse = {};
             }
 
+            console.log('Guardando carpeta de curso:', courseId, folderId, folderName, type);
             googleDriveData.foldersByCourse[courseId] = { folderId, folderName, type };
 
             await updateDoc(userDocRef, {
                 googleDrive: googleDriveData
             });
+            console.log('Firebase actualizado correctamente');
         }
     } catch (error) {
         console.error("Error saving course folder:", error);
@@ -385,7 +387,7 @@ async function loadUserData() {
                     isConnected: false,
                     accessToken: null,
                     userEmail: null,
-                    foldersByCourrse: {}
+                    foldersByCourse: {}
                 };
             }
 

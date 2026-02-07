@@ -1576,48 +1576,7 @@ window.saveCourseContacts = async (courseId) => {
     renderView();
 };
 
-window.uploadResource = async (courseId) => {
-    // Basic validations and user feedback
-    const input = document.getElementById(`resourceInput-${courseId}`);
-    if (!currentUser) {
-        showToast('Debes iniciar sesión para subir archivos.', false);
-        return;
-    }
-    if (!input || !input.files || input.files.length === 0) {
-        showToast('Selecciona un archivo antes de subir.', false);
-        return;
-    }
-
-    const file = input.files[0];
-    // Optional: size/type checks (example: limit 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-        showToast('Archivo demasiado grande (límite 10MB).', false);
-        return;
-    }
-
-    try {
-        showToast('Subiendo archivo...', true, 2000);
-        const storage = getStorage(app);
-        const path = `users/${currentUser.uid}/courses/${courseId}/resources/${Date.now()}_${file.name}`;
-        const sRef = storageRef(storage, path);
-
-        // Upload and get URL
-        await uploadBytes(sRef, file);
-        const url = await getDownloadURL(sRef);
-
-        const course = userData.courses.find(c => c.id === courseId);
-        if (!course.resources) course.resources = [];
-        course.resources.push({ id: Date.now(), name: file.name, url, size: file.size, uploadedAt: Date.now() });
-        await saveUserData();
-        input.value = '';
-        showToast('Archivo subido correctamente.', true);
-        renderView();
-    } catch (err) {
-        console.error('Upload failed', err);
-        showToast('Error subiendo archivo: ' + (err.message || err), false);
-    }
-};
+// NOTE: uploadResource is defined earlier in the file (line ~237) and uses the static HTML file input
 
 function showToast(message, success = true, duration = 3000) {
     const id = 'toast-' + Date.now();

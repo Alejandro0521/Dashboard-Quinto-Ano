@@ -481,6 +481,13 @@ function renderView() {
     }
 
     lucide.createIcons();
+
+    // Trigger loadCourseNotes if in course view and pointing to apuntes tab
+    if (currentView === 'course' && typeof currentCourseTab !== 'undefined' && currentCourseTab === 'apuntes') {
+        if (selectedCourse && typeof window.loadCourseNotes === 'function') {
+            window.loadCourseNotes(selectedCourse.id);
+        }
+    }
 }
 
 // Exponer renderView globalmente para livestock_dashboard.js

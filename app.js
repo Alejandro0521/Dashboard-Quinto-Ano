@@ -1444,6 +1444,8 @@ window.viewCourse = (courseId) => {
 
 window.closeTool = () => {
     currentTool = null;
+    currentView = 'course';
+    currentCourseTab = 'herramientas';
     renderView();
 };
 

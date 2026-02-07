@@ -244,24 +244,27 @@ window.uploadResource = (courseId) => {
     }
 };
 
-try {
-    const resource = userData.courses.find(c => c.id === courseId).resources[resourceIndex];
-    const fileRef = storageRef(storage, resource.path);
+window.deleteResource = async (courseId, resourceIndex) => {
+    if (!confirm('¿Estás seguro de eliminar este recurso?')) return;
 
-    await deleteObject(fileRef); // Delete from Storage
+    try {
+        const resource = userData.courses.find(c => c.id === courseId).resources[resourceIndex];
+        const fileRef = storageRef(storage, resource.path);
 
-    userData.courses.find(c => c.id === courseId).resources.splice(resourceIndex, 1); // Delete from local state
+        await deleteObject(fileRef); // Delete from Storage
 
-    await updateDoc(doc(db, 'users', currentUser.uid), {
-        courses: userData.courses
-    });
+        userData.courses.find(c => c.id === courseId).resources.splice(resourceIndex, 1); // Delete from local state
 
-    renderView();
-    alert('Recurso eliminado');
-} catch (error) {
-    console.error("Error deleting resource:", error);
-    alert('Error al eliminar recurso: ' + error.message);
-}
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+            courses: userData.courses
+        });
+
+        renderView();
+        alert('Recurso eliminado');
+    } catch (error) {
+        console.error("Error deleting resource:", error);
+        alert('Error al eliminar recurso: ' + error.message);
+    }
 };
 
 // Google Drive Integration Persistence

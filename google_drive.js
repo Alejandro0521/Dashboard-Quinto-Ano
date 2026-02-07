@@ -477,24 +477,22 @@ window.loadCourseNotes = async function (courseId) {
     }
 
     if (courseFolder.type === 'file') {
-        // If a single file was selected, display it directly
-        try {
-            const response = await gapi.client.drive.files.get({
-                fileId: targetId,
-                fields: 'id, name, mimeType, modifiedTime, webViewLink, thumbnailLink'
-            });
-            files = [response.result];
-        } catch (error) {
-            console.error('Error fetching single file:', error);
-            container.innerHTML = `
-                <div style="text-align: center; padding: 2rem; color: #ef4444;">
-                    <i data-lucide="alert-triangle" style="width: 32px; height: 32px; margin-bottom: 0.5rem;"></i>
-                    <p>Error al cargar el archivo seleccionado.</p>
+        // If a single file was selected, display it directly in an iframe
+        const previewUrl = `https://drive.google.com/file/d/${targetId}/preview`;
+
+        container.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 1rem; height: 75vh; min-height: 500px;">
+                <iframe src="${previewUrl}" width="100%" height="100%" style="border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #f9fafb;" allow="autoplay"></iframe>
+                <div style="display: flex; justify-content: flex-end; padding: 0 0.5rem;">
+                    <a href="https://drive.google.com/file/d/${targetId}/view" target="_blank" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-size: 0.875rem;">
+                        Abrir en Google Drive 
+                        <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                    </a>
                 </div>
-            `;
-            lucide.createIcons();
-            return;
-        }
+            </div>
+        `;
+        lucide.createIcons();
+        return;
     } else {
         // If a folder was selected, list its contents
         files = await listDriveFiles(targetId);

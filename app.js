@@ -244,29 +244,64 @@ window.uploadResource = (courseId) => {
     }
 };
 
-window.deleteResource = async (courseId, resourceIndex) => {
-    if (!confirm('¿Estás seguro de eliminar este recurso?')) return;
+try {
+    const resource = userData.courses.find(c => c.id === courseId).resources[resourceIndex];
+    const fileRef = storageRef(storage, resource.path);
+
+    await deleteObject(fileRef); // Delete from Storage
+
+    userData.courses.find(c => c.id === courseId).resources.splice(resourceIndex, 1); // Delete from local state
+
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+        courses: userData.courses
+    });
+
+    renderView();
+    alert('Recurso eliminado');
+} catch (error) {
+    console.error("Error deleting resource:", error);
+    alert('Error al eliminar recurso: ' + error.message);
+}
+};
+
+// Google Drive Integration Persistence
+window.saveUserDriveConfig = async (driveState) => {
+    if (!currentUser) return;
 
     try {
-        const courseIndex = userData.courses.findIndex(c => c.id === courseId);
-        if (courseIndex === -1) return;
-
-        // Ensure resources array exists
-        if (!userData.courses[courseIndex].resources) userData.courses[courseIndex].resources = [];
-
-        // Remove from Firestore logic would also ideally remove from Storage
-        // For now, we update the data structure. Storage cleanup is separate or can be added.
-        userData.courses[courseIndex].resources.splice(resourceIndex, 1);
-
         await updateDoc(doc(db, 'users', currentUser.uid), {
-            courses: userData.courses
+            googleDrive: {
+                isConnected: driveState.isConnected,
+                userEmail: driveState.userEmail,
+                accessToken: driveState.accessToken
+            }
         });
-
-        renderView();
-
     } catch (error) {
-        console.error("Error deleting resource:", error);
-        alert('Error al eliminar el recurso');
+        console.error("Error saving Drive config:", error);
+    }
+};
+
+window.saveUserCourseFolder = async (courseId, folderId, folderName) => {
+    if (!currentUser) return;
+
+    try {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            let googleDriveData = userDoc.data().googleDrive || {};
+            if (!googleDriveData.foldersByCourrse) {
+                googleDriveData.foldersByCourrse = {};
+            }
+
+            googleDriveData.foldersByCourrse[courseId] = { folderId, folderName };
+
+            await updateDoc(userDocRef, {
+                googleDrive: googleDriveData
+            });
+        }
+    } catch (error) {
+        console.error("Error saving course folder:", error);
     }
 };
 
@@ -338,6 +373,20 @@ async function loadUserData() {
         const docData = docSnap.data();
         userData = docData.data;
         currentUserName = docData.name || (currentUser.email ? currentUser.email.split('@')[0] : 'Estudiante');
+
+        // Cargar configuración de Google Drive
+        if (docData.googleDrive && window.googleDriveState) {
+            window.googleDriveState.isConnected = docData.googleDrive.isConnected || false;
+            window.googleDriveState.userEmail = docData.googleDrive.userEmail || null;
+            window.googleDriveState.accessToken = docData.googleDrive.accessToken || null;
+            window.googleDriveState.foldersByCourrse = docData.googleDrive.foldersByCourrse || {};
+
+            // Si hay token, intentar restaurar sesión silenciosa
+            if (window.googleDriveState.isConnected && typeof gapi !== 'undefined' && gapi.auth2) {
+                // La librería de Google manejará esto, pero seteamos el estado visual
+                console.log('Restaurando sesión de Drive para:', window.googleDriveState.userEmail);
+            }
+        }
 
         // Migrate/sync user data with latest INITIAL_DATA structure
         let needsUpdate = false;

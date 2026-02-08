@@ -520,17 +520,99 @@ window.loadCourseNotes = async function (courseId) {
     }
 
     if (courseFolder.type === 'file') {
-        // If a single file was selected, display it directly in an iframe
+        // Modern PDF viewer with clean design
         const previewUrl = `https://drive.google.com/file/d/${targetId}/preview`;
+        const fileName = courseFolder.folderName || courseFolder.name || 'Documento.pdf';
 
         container.innerHTML = `
-            <div style="display: flex; flex-direction: column; gap: 1rem; height: 75vh; min-height: 500px;">
-                <iframe src="${previewUrl}" width="100%" height="100%" style="border: 1px solid #e5e5e5; border-radius: 0.5rem; background: #f9fafb;" allow="autoplay"></iframe>
-                <div style="display: flex; justify-content: flex-end; padding: 0 0.5rem;">
-                    <a href="https://drive.google.com/file/d/${targetId}/view" target="_blank" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-size: 0.875rem;">
-                        Abrir en Google Drive 
-                        <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
-                    </a>
+            <div style="
+                display: flex; 
+                flex-direction: column; 
+                gap: 0; 
+                background: white;
+                border-radius: 1rem;
+                overflow: hidden;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            ">
+                <!-- Header Bar -->
+                <div style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem 1.5rem;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                ">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.125rem;">${fileName}</div>
+                            <div style="font-size: 0.7rem; opacity: 0.9;">Vista previa en tiempo real</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <a href="https://drive.google.com/file/d/${targetId}/view" 
+                           target="_blank" 
+                           style="
+                               padding: 0.5rem 1rem;
+                               background: rgba(255, 255, 255, 0.2);
+                               backdrop-filter: blur(10px);
+                               border: 1px solid rgba(255, 255, 255, 0.3);
+                               border-radius: 0.5rem;
+                               color: white;
+                               text-decoration: none;
+                               font-size: 0.875rem;
+                               display: inline-flex;
+                               align-items: center;
+                               gap: 0.5rem;
+                               transition: all 0.2s;
+                           "
+                           onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                           onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'"
+                        >
+                            <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                            Abrir en Drive
+                        </a>
+                        <button 
+                            onclick="document.getElementById('pdf-fullscreen-${courseId}').requestFullscreen()"
+                            style="
+                                padding: 0.5rem;
+                                background: rgba(255, 255, 255, 0.2);
+                                backdrop-filter: blur(10px);
+                                border: 1px solid rgba(255, 255, 255, 0.3);
+                                border-radius: 0.5rem;
+                                color: white;
+                                cursor: pointer;
+                                display: inline-flex;
+                                align-items: center;
+                                transition: all 0.2s;
+                            "
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'"
+                            title="Pantalla completa"
+                        >
+                            <i data-lucide="maximize-2" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- PDF Viewer Container -->
+                <div id="pdf-fullscreen-${courseId}" style="
+                    position: relative;
+                    height: 80vh;
+                    min-height: 600px;
+                    background: #f8f9fa;
+                ">
+                    <iframe 
+                        src="${previewUrl}" 
+                        width="100%" 
+                        height="100%" 
+                        style="
+                            border: none;
+                            display: block;
+                        " 
+                        allow="autoplay"
+                    ></iframe>
                 </div>
             </div>
         `;

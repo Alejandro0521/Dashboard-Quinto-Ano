@@ -88,8 +88,8 @@
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Yuc. : Aric Planta TIF 170",
-            "Ver. : Rastro Municipal de Xalapa",
             "Chis. : TIF 78 Frigorífico del Sureste",
+            "Ver. : Rastro Municipal de Xalapa",
             "Oax. : Rastro Reforma Agraria"
           ]
         },
@@ -136,7 +136,7 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-02-14T12:44:44.598562",
+  "timestamp": "2026-02-14T18:32:44.653013",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
     "norte_vs_sur_pct": 12.3,

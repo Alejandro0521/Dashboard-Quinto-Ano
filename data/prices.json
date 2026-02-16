@@ -6,7 +6,7 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 48.42,
+          "precio": 48.14,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 56.71,
+          "precio": 56.44,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,7 +81,7 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 43.27,
+          "precio": 43.73,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-02-15T18:34:53.230183",
+  "timestamp": "2026-02-16T02:03:01.472564",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 11.9,
-    "norte_vs_jalisco_pct": -14.6,
-    "jalisco_vs_sur_pct": 31.1,
+    "norte_vs_sur_pct": 10.1,
+    "norte_vs_jalisco_pct": -14.7,
+    "jalisco_vs_sur_pct": 29.1,
     "region_mas_cara": "jalisco",
     "region_mas_barata": "sur"
   }

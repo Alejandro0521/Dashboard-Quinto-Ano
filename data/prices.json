@@ -13,8 +13,8 @@
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "Son. : Rastro TIF Bovinos Hermosillo",
             "N.L. : TIF 15 Emp. Treviño",
+            "Son. : Rastro TIF Bovinos Hermosillo",
             "Dgo. : Planta TIF No. 546",
             "Coah. : R.M. Torreón"
           ]
@@ -136,7 +136,7 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-02-18T07:00:02.799135",
+  "timestamp": "2026-02-18T13:01:39.154688",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
     "norte_vs_sur_pct": 6.6,

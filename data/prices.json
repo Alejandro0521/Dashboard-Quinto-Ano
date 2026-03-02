@@ -13,8 +13,8 @@
           "fuente": "SNIIM Real Data",
           "rastros": [
             "N.L. : TIF 15 Emp. Treviño",
-            "Chih. : R.M.TIF 366 Corral de San Ignacio",
             "Son. : Rastro TIF Bovinos Hermosillo",
+            "Chih. : R.M.TIF 366 Corral de San Ignacio",
             "Coah. : R.M. Torreón",
             "Dgo. : Planta TIF No. 546"
           ]
@@ -87,8 +87,8 @@
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "Yuc. : Aric Planta TIF 170",
             "Chis. : TIF 78 Frigorífico del Sureste",
+            "Yuc. : Aric Planta TIF 170",
             "Ver. : Rastro Municipal de Xalapa",
             "Oax. : Rastro Reforma Agraria"
           ]
@@ -136,7 +136,7 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-03-02T02:00:22.345788",
+  "timestamp": "2026-03-02T06:56:15.076820",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
     "norte_vs_sur_pct": 0.0,

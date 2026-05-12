@@ -6,15 +6,15 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 49.38,
+          "precio": 49.3,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "Son. : Rastro TIF Bovinos Hermosillo",
             "N.L. : TIF 15 Emp. Treviño",
+            "Son. : Rastro TIF Bovinos Hermosillo",
             "Dgo. : Planta TIF No. 546",
             "Coah. : R.M. Torreón"
           ]
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 50.52,
+          "precio": 50.54,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,15 +81,15 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 43.3,
+          "precio": 43.34,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "Chis. : TIF 78 Frigorífico del Sureste",
-            "Ver. : Rastro Municipal de Xalapa",
             "Yuc. : Aric Planta TIF 170",
+            "Ver. : Rastro Municipal de Xalapa",
+            "Chis. : TIF 78 Frigorífico del Sureste",
             "Oax. : Rastro Reforma Agraria"
           ]
         },
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-05-11T19:44:01.990443",
+  "timestamp": "2026-05-12T02:49:40.591984",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 14.0,
-    "norte_vs_jalisco_pct": -2.3,
-    "jalisco_vs_sur_pct": 16.7,
+    "norte_vs_sur_pct": 13.8,
+    "norte_vs_jalisco_pct": -2.5,
+    "jalisco_vs_sur_pct": 16.6,
     "region_mas_cara": "jalisco",
     "region_mas_barata": "sur"
   }

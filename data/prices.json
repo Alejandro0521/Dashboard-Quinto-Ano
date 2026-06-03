@@ -87,9 +87,9 @@
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "Yuc. : Aric Planta TIF 170",
             "Ver. : Rastro Municipal de Xalapa",
             "Chis. : TIF 78 Frigorífico del Sureste",
+            "Yuc. : Aric Planta TIF 170",
             "Oax. : Rastro Reforma Agraria"
           ]
         },
@@ -136,7 +136,7 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-06-02T20:46:26.663562",
+  "timestamp": "2026-06-03T03:56:24.480029",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
     "norte_vs_sur_pct": 13.6,

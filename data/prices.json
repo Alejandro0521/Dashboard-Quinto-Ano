@@ -6,17 +6,17 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 46.27,
+          "precio": 46.35,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "N.L. : TIF 15 Emp. Treviño",
             "Son. : Rastro TIF Bovinos Hermosillo",
             "Dgo. : Planta TIF No. 546",
-            "Coah. : R.M. Torreón"
+            "Coah. : R.M. Torreón",
+            "N.L. : TIF 15 Emp. Treviño"
           ]
         },
         "porcino": {
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 44.75,
+          "precio": 45.26,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,16 +81,16 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 42.51,
+          "precio": 42.41,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
+            "Yuc. : Aric Planta TIF 170",
             "Chis. : TIF 78 Frigorífico del Sureste",
-            "Ver. : Rastro Municipal de Xalapa",
             "Oax. : Rastro Reforma Agraria",
-            "Yuc. : Aric Planta TIF 170"
+            "Ver. : Rastro Municipal de Xalapa"
           ]
         },
         "porcino": {
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-07-28T14:01:52.897737",
+  "timestamp": "2026-07-28T19:20:07.209042",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 8.8,
-    "norte_vs_jalisco_pct": 3.4,
-    "jalisco_vs_sur_pct": 5.3,
+    "norte_vs_sur_pct": 9.3,
+    "norte_vs_jalisco_pct": 2.4,
+    "jalisco_vs_sur_pct": 6.7,
     "region_mas_cara": "norte",
     "region_mas_barata": "sur"
   }

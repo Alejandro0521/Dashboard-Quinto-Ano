@@ -6,17 +6,17 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 45.24,
+          "precio": 45.68,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
+            "Son. : Rastro TIF Bovinos Hermosillo",
             "N.L. : TIF 15 Emp. Treviño",
-            "Coah. : R.M. Torreón",
             "Dgo. : Planta TIF No. 546",
-            "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "Son. : Rastro TIF Bovinos Hermosillo"
+            "Coah. : R.M. Torreón",
+            "Chih. : R.M.TIF 366 Corral de San Ignacio"
           ]
         },
         "porcino": {
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 45.15,
+          "precio": 45.6,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,7 +81,7 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 42.79,
+          "precio": 42.77,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -89,8 +89,8 @@
           "rastros": [
             "Yuc. : Aric Planta TIF 170",
             "Ver. : Rastro Municipal de Xalapa",
-            "Chis. : TIF 78 Frigorífico del Sureste",
-            "Oax. : Rastro Reforma Agraria"
+            "Oax. : Rastro Reforma Agraria",
+            "Chis. : TIF 78 Frigorífico del Sureste"
           ]
         },
         "porcino": {
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-08-27T07:20:15.938574",
+  "timestamp": "2026-08-27T21:46:23.025885",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 5.7,
+    "norte_vs_sur_pct": 6.8,
     "norte_vs_jalisco_pct": 0.2,
-    "jalisco_vs_sur_pct": 5.5,
+    "jalisco_vs_sur_pct": 6.6,
     "region_mas_cara": "norte",
     "region_mas_barata": "sur"
   }

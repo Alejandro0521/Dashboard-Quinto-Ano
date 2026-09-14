@@ -6,17 +6,17 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 48.25,
+          "precio": 48.36,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "N.L. : TIF 15 Emp. Treviño",
+            "Son. : Rastro TIF Bovinos Hermosillo",
             "Dgo. : Planta TIF No. 546",
             "Coah. : R.M. Torreón",
-            "Son. : Rastro TIF Bovinos Hermosillo"
+            "N.L. : TIF 15 Emp. Treviño"
           ]
         },
         "porcino": {
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 50.4,
+          "precio": 50.2,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,7 +81,7 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 43.67,
+          "precio": 43.61,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -89,8 +89,8 @@
           "rastros": [
             "Yuc. : Aric Planta TIF 170",
             "Chis. : TIF 78 Frigorífico del Sureste",
-            "Ver. : Rastro Municipal de Xalapa",
-            "Oax. : Rastro Reforma Agraria"
+            "Oax. : Rastro Reforma Agraria",
+            "Ver. : Rastro Municipal de Xalapa"
           ]
         },
         "porcino": {
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-09-14T11:49:12.888803",
+  "timestamp": "2026-09-14T17:42:28.674406",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 10.5,
-    "norte_vs_jalisco_pct": -4.3,
-    "jalisco_vs_sur_pct": 15.4,
+    "norte_vs_sur_pct": 10.9,
+    "norte_vs_jalisco_pct": -3.7,
+    "jalisco_vs_sur_pct": 15.1,
     "region_mas_cara": "jalisco",
     "region_mas_barata": "sur"
   }

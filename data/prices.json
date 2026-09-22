@@ -6,17 +6,17 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 44.05,
+          "precio": 44.29,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "N.L. : TIF 15 Emp. Treviño",
-            "Coah. : R.M. Torreón",
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "Son. : Rastro TIF Bovinos Hermosillo",
-            "Dgo. : Planta TIF No. 546"
+            "N.L. : TIF 15 Emp. Treviño",
+            "Dgo. : Planta TIF No. 546",
+            "Coah. : R.M. Torreón",
+            "Son. : Rastro TIF Bovinos Hermosillo"
           ]
         },
         "porcino": {
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 43.96,
+          "precio": 44.44,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,15 +81,16 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 42.57,
+          "precio": 42.11,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "Chis. : TIF 78 Frigorífico del Sureste",
+            "Ver. : Rastro Municipal de Xalapa",
             "Oax. : Rastro Reforma Agraria",
-            "Yuc. : Aric Planta TIF 170"
+            "Yuc. : Aric Planta TIF 170",
+            "Chis. : TIF 78 Frigorífico del Sureste"
           ]
         },
         "porcino": {
@@ -135,13 +136,13 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-09-22T16:17:34.931554",
+  "timestamp": "2026-09-22T20:53:36.073133",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 3.5,
-    "norte_vs_jalisco_pct": 0.2,
-    "jalisco_vs_sur_pct": 3.3,
-    "region_mas_cara": "norte",
+    "norte_vs_sur_pct": 5.2,
+    "norte_vs_jalisco_pct": -0.3,
+    "jalisco_vs_sur_pct": 5.5,
+    "region_mas_cara": "jalisco",
     "region_mas_barata": "sur"
   }
 }

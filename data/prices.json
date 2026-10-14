@@ -6,15 +6,15 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 48.57,
+          "precio": 48.58,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "Son. : Rastro TIF Bovinos Hermosillo",
             "N.L. : TIF 15 Emp. Treviño",
+            "Son. : Rastro TIF Bovinos Hermosillo",
             "Dgo. : Planta TIF No. 546",
             "Coah. : R.M. Torreón"
           ]
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 50.87,
+          "precio": 50.73,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,16 +81,16 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 43.61,
+          "precio": 43.58,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Yuc. : Aric Planta TIF 170",
+            "Ver. : Rastro Municipal de Xalapa",
             "Chis. : TIF 78 Frigorífico del Sureste",
-            "Oax. : Rastro Reforma Agraria",
-            "Ver. : Rastro Municipal de Xalapa"
+            "Oax. : Rastro Reforma Agraria"
           ]
         },
         "porcino": {
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-10-14T16:33:02.938390",
+  "timestamp": "2026-10-14T21:17:01.009739",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 11.4,
-    "norte_vs_jalisco_pct": -4.5,
-    "jalisco_vs_sur_pct": 16.6,
+    "norte_vs_sur_pct": 11.5,
+    "norte_vs_jalisco_pct": -4.2,
+    "jalisco_vs_sur_pct": 16.4,
     "region_mas_cara": "jalisco",
     "region_mas_barata": "sur"
   }

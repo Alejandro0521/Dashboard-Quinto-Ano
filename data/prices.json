@@ -6,17 +6,17 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 44.74,
+          "precio": 44.86,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
+            "Son. : Rastro TIF Bovinos Hermosillo",
             "N.L. : TIF 15 Emp. Treviño",
             "Coah. : R.M. Torreón",
-            "Dgo. : Planta TIF No. 546",
-            "Son. : Rastro TIF Bovinos Hermosillo"
+            "Dgo. : Planta TIF No. 546"
           ]
         },
         "porcino": {
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 44.37,
+          "precio": 44.61,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,7 +81,7 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 42.21,
+          "precio": 42.31,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-10-23T16:28:18.588558",
+  "timestamp": "2026-10-23T20:59:37.240761",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
     "norte_vs_sur_pct": 6.0,
-    "norte_vs_jalisco_pct": 0.8,
-    "jalisco_vs_sur_pct": 5.1,
+    "norte_vs_jalisco_pct": 0.6,
+    "jalisco_vs_sur_pct": 5.4,
     "region_mas_cara": "norte",
     "region_mas_barata": "sur"
   }

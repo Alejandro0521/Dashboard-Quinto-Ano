@@ -6,7 +6,7 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 45.04,
+          "precio": 45.02,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -14,9 +14,9 @@
           "rastros": [
             "Chih. : R.M.TIF 366 Corral de San Ignacio",
             "Son. : Rastro TIF Bovinos Hermosillo",
-            "N.L. : TIF 15 Emp. Treviño",
+            "Coah. : R.M. Torreón",
             "Dgo. : Planta TIF No. 546",
-            "Coah. : R.M. Torreón"
+            "N.L. : TIF 15 Emp. Treviño"
           ]
         },
         "porcino": {
@@ -46,7 +46,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 45.0,
+          "precio": 44.97,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -81,7 +81,7 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 42.77,
+          "precio": 42.98,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -89,8 +89,8 @@
           "rastros": [
             "Yuc. : Aric Planta TIF 170",
             "Ver. : Rastro Municipal de Xalapa",
-            "Chis. : TIF 78 Frigorífico del Sureste",
-            "Oax. : Rastro Reforma Agraria"
+            "Oax. : Rastro Reforma Agraria",
+            "Chis. : TIF 78 Frigorífico del Sureste"
           ]
         },
         "porcino": {
@@ -136,12 +136,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-10-27T21:49:12.986424",
+  "timestamp": "2026-10-28T04:01:30.887033",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 5.3,
+    "norte_vs_sur_pct": 4.7,
     "norte_vs_jalisco_pct": 0.1,
-    "jalisco_vs_sur_pct": 5.2,
+    "jalisco_vs_sur_pct": 4.6,
     "region_mas_cara": "norte",
     "region_mas_barata": "sur"
   }

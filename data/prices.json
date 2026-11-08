@@ -6,17 +6,16 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 44.24,
+          "precio": 45.05,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "Chih. : R.M.TIF 366 Corral de San Ignacio",
-            "Coah. : R.M. Torreón",
             "Son. : Rastro TIF Bovinos Hermosillo",
-            "N.L. : TIF 15 Emp. Treviño",
-            "Dgo. : Planta TIF No. 546"
+            "Coah. : R.M. Torreón",
+            "Dgo. : Planta TIF No. 546",
+            "N.L. : TIF 15 Emp. Treviño"
           ]
         },
         "porcino": {
@@ -46,14 +45,12 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 41.81,
+          "precio": 75.0,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
-          "fuente": "SNIIM Real Data",
-          "rastros": [
-            "Jal. : R.M. Guadalajara"
-          ]
+          "fuente": "Base SNIIM",
+          "rastros": []
         },
         "porcino": {
           "precio": 37.5,
@@ -81,17 +78,12 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 41.21,
+          "precio": 72.0,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
-          "fuente": "SNIIM Real Data",
-          "rastros": [
-            "Chis. : TIF 78 Frigorífico del Sureste",
-            "Ver. : Rastro Municipal de Xalapa",
-            "Oax. : Rastro Reforma Agraria",
-            "Yuc. : Aric Planta TIF 170"
-          ]
+          "fuente": "Base SNIIM",
+          "rastros": []
         },
         "porcino": {
           "precio": 36.0,
@@ -136,13 +128,13 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-11-08T04:29:13.520973",
+  "timestamp": "2026-11-08T12:45:47.394139",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 7.4,
-    "norte_vs_jalisco_pct": 5.8,
-    "jalisco_vs_sur_pct": 1.5,
-    "region_mas_cara": "norte",
-    "region_mas_barata": "sur"
+    "norte_vs_sur_pct": -37.4,
+    "norte_vs_jalisco_pct": -39.9,
+    "jalisco_vs_sur_pct": 4.2,
+    "region_mas_cara": "jalisco",
+    "region_mas_barata": "norte"
   }
 }

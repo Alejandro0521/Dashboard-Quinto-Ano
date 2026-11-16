@@ -6,16 +6,16 @@
       "estados": "Chihuahua, Sonora, Nuevo León, Coahuila, Durango",
       "livestock": {
         "bovino": {
-          "precio": 46.3,
+          "precio": 46.08,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
           "fuente": "SNIIM Real Data",
           "rastros": [
-            "Chih. : R.M.TIF 366 Corral de San Ignacio",
+            "N.L. : TIF 15 Emp. Treviño",
             "Son. : Rastro TIF Bovinos Hermosillo",
             "Coah. : R.M. Torreón",
-            "N.L. : TIF 15 Emp. Treviño"
+            "Dgo. : Planta TIF No. 546"
           ]
         },
         "porcino": {
@@ -45,7 +45,7 @@
       "especial": true,
       "livestock": {
         "bovino": {
-          "precio": 44.42,
+          "precio": 44.07,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -80,7 +80,7 @@
       "estados": "Veracruz, Chiapas, Yucatán, Oaxaca",
       "livestock": {
         "bovino": {
-          "precio": 41.16,
+          "precio": 41.13,
           "unidad": "MXN/kg",
           "tendencia": "neutral",
           "nombre": "Ganado Bovino",
@@ -88,8 +88,8 @@
           "rastros": [
             "Yuc. : Aric Planta TIF 170",
             "Chis. : TIF 78 Frigorífico del Sureste",
-            "Ver. : Rastro Municipal de Xalapa",
-            "Oax. : Rastro Reforma Agraria"
+            "Oax. : Rastro Reforma Agraria",
+            "Ver. : Rastro Municipal de Xalapa"
           ]
         },
         "porcino": {
@@ -135,12 +135,12 @@
       "nombre": "Alfalfa"
     }
   },
-  "timestamp": "2026-11-15T22:28:36.261526",
+  "timestamp": "2026-11-16T04:47:13.378678",
   "source": "SNIIM - Secretaría de Economía México",
   "comparacion": {
-    "norte_vs_sur_pct": 12.5,
-    "norte_vs_jalisco_pct": 4.2,
-    "jalisco_vs_sur_pct": 7.9,
+    "norte_vs_sur_pct": 12.0,
+    "norte_vs_jalisco_pct": 4.6,
+    "jalisco_vs_sur_pct": 7.1,
     "region_mas_cara": "norte",
     "region_mas_barata": "sur"
   }
